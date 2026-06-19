@@ -5,9 +5,9 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-load_dotenv(BASE_DIR / '.env')
+load_dotenv(BASE_DIR / '.env', override=True)
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-ev53^y=@78jk0auv-@l!wz&f#52_5im*629^bin(jn45zcr*=c')
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-me-in-production')
 
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 

@@ -104,7 +104,7 @@ class AdminContentFlag(models.Model):
     reviewed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'admin_content_flags'
 
     def __str__(self):
