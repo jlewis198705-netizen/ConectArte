@@ -60,22 +60,13 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'conectarte_project.wsgi.application'
-
-db_from_env = dj_database_url.config(conn_max_age=600)
-
-if db_from_env:
-    DATABASES = {
-        'default': db_from_env
-    }
-else:
-    # Si no hay URL (como en tu PC local), usamos SQLite
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+DATABASES = {
+    'default': dj_database_url.config(
+        default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3'),
+        conn_max_age=600,
+        ssl_require=True
+    )
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {
