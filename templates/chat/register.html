@@ -1,0 +1,150 @@
+{% load static %}
+
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - ConectArte</title>
+    <meta name="description" content="Regístrate en ConectArte como artista o cliente para contratar o negociar servicios artísticos.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 relative">
+    <button id="theme-toggle" class="absolute top-4 right-4 p-2 btn-vintage text-sm">🌓</button>
+    <!-- Vintage Card -->
+    <div class="relative z-10 card-vintage p-8 w-full max-w-md">
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center p-3 bg-tertiary rounded-2xl border border-vintage mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="w-10 h-10">
+                    <path d="M32 4C16.536 4 4 16.536 4 32c0 8.284 3.582 15.75 9.314 20.98C14.9 54.4 16.9 55 19 55c3 0 5-2 5-5v-2c0-2.21 1.79-4 4-4h3c8.837 0 16-7.163 16-16 0-13.255-6.716-24-15-24z" fill="var(--accent)"/>
+                    <circle cx="18" cy="26" r="4" fill="var(--accent-light)"/>
+                    <circle cx="26" cy="16" r="4" fill="#fb923c"/>
+                    <circle cx="38" cy="16" r="4" fill="var(--accent-light)"/>
+                    <circle cx="46" cy="26" r="4" fill="#34d399"/>
+                    <circle cx="28" cy="48" r="3" fill="#e879f9" opacity="0.85"/>
+                </svg>
+            </div>
+            <h1 class="text-3xl font-bold tracking-tight text-primary">Crear Cuenta</h1>
+            <p class="text-sm text-muted mt-2">Únete a la red inteligente de ConectArte</p>
+        </div>
+
+        <div id="error-message" class="hidden p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl mb-6 text-center"></div>
+
+        <form id="register-form" method="POST" class="space-y-4">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="first_name" class="block text-xs font-semibold text-secondary uppercase tracking-wider mb-2">Nombre</label>
+                    <input type="text" id="first_name" name="first_name" required 
+                           class="input-vintage w-full text-sm" 
+                           placeholder="ej. Pablo">
+                </div>
+                <div>
+                    <label for="last_name" class="block text-xs font-semibold text-secondary uppercase tracking-wider mb-2">Apellido</label>
+                    <input type="text" id="last_name" name="last_name" required 
+                           class="input-vintage w-full text-sm" 
+                           placeholder="ej. Picasso">
+                </div>
+            </div>
+
+            <div>
+                <label for="username" class="block text-xs font-semibold text-secondary uppercase tracking-wider mb-2">Nombre de usuario</label>
+                <input type="text" id="username" name="username" required 
+                       class="input-vintage w-full text-sm" 
+                       placeholder="ej. pablo_art">
+            </div>
+
+            <div>
+                <label for="password" class="block text-xs font-semibold text-secondary uppercase tracking-wider mb-2">Contraseña</label>
+                <input type="password" id="password" name="password" required 
+                       class="input-vintage w-full text-sm" 
+                       placeholder="Mínimo 8 caracteres">
+            </div>
+
+            <div>
+                <label for="role" class="block text-xs font-semibold text-secondary uppercase tracking-wider mb-2">Tipo de Usuario</label>
+                <select id="role" name="role" required
+                        class="input-vintage w-full text-sm">
+                    <option value="client">Cliente (Deseo contratar servicios artísticos)</option>
+                    <option value="artist">Artista (Ofrezco mis servicios artísticos)</option>
+                </select>
+            </div>
+
+            <button type="submit" id="btn-register" class="btn-vintage w-full py-3 mt-2">
+                Crear Cuenta
+            </button>
+        </form>
+
+        <div class="mt-6 text-center text-sm">
+            <span class="text-muted">¿Ya tienes cuenta?</span>
+            <a href="{% url 'login' %}" class="link-vintage font-semibold ml-1">Inicia sesión</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('register-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const errDiv = document.getElementById('error-message');
+            errDiv.classList.add('hidden');
+            
+            const formData = new FormData(this);
+            const csrfToken = formData.get('csrfmiddlewaretoken');
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('{% url "register" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                if (response.ok && result.ok) {
+                    window.location.href = result.redirect;
+                } else {
+                    errDiv.textContent = result.error || 'Ocurrió un error inesperado.';
+                    errDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                errDiv.textContent = 'Error de conexión con el servidor.';
+                errDiv.classList.remove('hidden');
+            }
+        });
+    </script>
+    <script>
+      // Theme toggle script
+      const toggleBtn = document.getElementById('theme-toggle');
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+          const dark = document.documentElement.dataset.theme === 'dark';
+          document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+          localStorage.setItem('theme', dark ? 'light' : 'dark');
+        });
+      }
+      // Initialize theme
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.dataset.theme = savedTheme;
+    </script>
+</body>
+</html>

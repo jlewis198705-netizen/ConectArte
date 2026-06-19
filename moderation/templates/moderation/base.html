@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Panel - ConectArte{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    {% load static %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --bg-primary: #fdf6e3;
+            --bg-secondary: #f5ead7;
+            --bg-tertiary: #ebe0c8;
+            --text-primary: #2c241a;
+            --text-secondary: #5d4e37;
+            --text-muted: #8b7d6b;
+            --accent: #c49a2a;
+            --accent-dark: #a88222;
+            --accent-light: #e8c56d;
+            --border: #d4c4a8;
+            --shadow: rgba(44, 36, 26, 0.15);
+            --shadow-strong: rgba(44, 36, 26, 0.25);
+            --focus-ring: rgba(196, 154, 42, 0.4);
+            --sidebar-bg: rgba(245, 234, 215, 0.85);
+            --sidebar-border: #d4c4a8;
+            --card-bg: rgba(245, 234, 215, 0.6);
+        }
+        [data-theme="dark"] {
+            --bg-primary: #1a1612;
+            --bg-secondary: #241f1a;
+            --bg-tertiary: #2d261f;
+            --text-primary: #f5e6c8;
+            --text-secondary: #c9b896;
+            --text-muted: #9a8b72;
+            --accent: #d4a835;
+            --accent-dark: #b8922a;
+            --accent-light: #e8c56d;
+            --border: #4a3f2e;
+            --shadow: rgba(0, 0, 0, 0.4);
+            --shadow-strong: rgba(0, 0, 0, 0.6);
+            --focus-ring: rgba(212, 168, 53, 0.5);
+            --sidebar-bg: rgba(36, 31, 26, 0.9);
+            --sidebar-border: #4a3f2e;
+            --card-bg: rgba(36, 31, 26, 0.6);
+        }
+
+        html, body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-image: url('{% static "images/marmolito1.png" %}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-color: rgba(253, 246, 227, 0.7);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        [data-theme="dark"] body::before {
+            background-color: rgba(26, 22, 18, 0.75);
+        }
+
+        .card-vintage {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px var(--shadow), inset 0 1px 0 var(--accent-light);
+        }
+
+        .btn-vintage {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: #1a1612;
+            font-weight: 600;
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--accent-dark);
+            box-shadow: 0 2px 8px var(--shadow), inset 0 1px 0 var(--accent-light);
+            transition: all 0.2s ease;
+        }
+        .btn-vintage:hover {
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            box-shadow: 0 4px 16px var(--shadow-strong), inset 0 1px 0 var(--accent-light);
+            transform: translateY(-1px);
+        }
+
+        .input-vintage {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        .input-vintage:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--focus-ring);
+        }
+        .input-vintage::placeholder {
+            color: var(--text-muted);
+        }
+
+        .link-vintage {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .link-vintage:hover {
+            color: var(--accent-dark);
+            border-bottom-color: var(--accent-dark);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            border-radius: 4px;
+        }
+
+        ::selection {
+            background: var(--accent);
+            color: #1a1612;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+        .sidebar-link:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        .sidebar-link.active {
+            background: var(--accent-light);
+            color: #1a1612;
+            border: 1px solid var(--accent);
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen flex relative">
+    <button id="theme-toggle" class="fixed top-4 right-4 z-50 btn-vintage p-2 text-sm">🌓</button>
+
+    <nav class="fixed left-0 top-0 h-full w-64 z-40 flex flex-col" style="background: var(--sidebar-bg); border-right: 1px solid var(--sidebar-border); backdrop-filter: blur(12px);">
+        <div class="p-5" style="border-bottom: 1px solid var(--border);">
+            <div class="flex items-center gap-3">
+                <div class="p-2" style="background: var(--accent-light); border-radius: 10px; border: 1px solid var(--accent);">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="w-7 h-7">
+                        <path d="M32 4C16.536 4 4 16.536 4 32c0 8.284 3.582 15.75 9.314 20.98C14.9 54.4 16.9 55 19 55c3 0 5-2 5-5v-2c0-2.21 1.79-4 4-4h3c8.837 0 16-7.163 16-16 0-13.255-6.716-24-15-24z" fill="var(--accent-dark)"/>
+                        <circle cx="18" cy="26" r="4" fill="var(--accent-light)"/>
+                        <circle cx="26" cy="16" r="4" fill="#fb923c"/>
+                        <circle cx="38" cy="16" r="4" fill="var(--accent-light)"/>
+                        <circle cx="46" cy="26" r="4" fill="#34d399"/>
+                        <circle cx="28" cy="48" r="3" fill="#e879f9" opacity="0.85"/>
+                    </svg>
+                </div>
+                <div>
+                    <span class="text-lg font-bold tracking-tight" style="color: var(--text-primary);">Admin Panel</span>
+                    <p class="text-xs" style="color: var(--text-muted);">ConectArte</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
+            <a href="{% url 'mod_dashboard' %}"
+               class="sidebar-link {% if request.resolver_match.url_name == 'mod_dashboard' %}active{% endif %}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                <span class="text-sm font-medium">Dashboard</span>
+            </a>
+            <a href="{% url 'mod_artists' %}"
+               class="sidebar-link {% if request.resolver_match.url_name == 'mod_artists' %}active{% endif %}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                <span class="text-sm font-medium">Artistas</span>
+            </a>
+            <a href="{% url 'mod_clients' %}"
+               class="sidebar-link {% if request.resolver_match.url_name == 'mod_clients' %}active{% endif %}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                <span class="text-sm font-medium">Clientes</span>
+            </a>
+            <a href="{% url 'mod_content' %}"
+               class="sidebar-link {% if request.resolver_match.url_name == 'mod_content' %}active{% endif %}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <span class="text-sm font-medium">Contenido</span>
+            </a>
+            <a href="{% url 'mod_negotiations' %}"
+               class="sidebar-link {% if request.resolver_match.url_name == 'mod_negotiations' %}active{% endif %}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                <span class="text-sm font-medium">Negociaciones</span>
+            </a>
+        </div>
+
+        <div class="px-4 pb-2">
+            <a href="{% url 'dashboard' %}" target="_blank"
+               class="sidebar-link">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                <span class="text-sm font-medium">Ir al Sitio</span>
+            </a>
+        </div>
+
+        <div class="p-4" style="border-top: 1px solid var(--border);">
+            <div class="flex items-center gap-3 px-4 py-3">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold" style="background: var(--accent-light); color: #1a1612; border: 1px solid var(--accent);">
+                    {{ admin_name|first|upper }}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium" style="color: var(--text-primary);">{{ admin_name }}</p>
+                    <p class="text-xs" style="color: var(--text-muted);">Administrador</p>
+                </div>
+                <a href="{% url 'mod_logout' %}" class="link-vintage" title="Cerrar sesión">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="relative z-10 flex-1 ml-64 p-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        document.getElementById('theme-toggle')?.addEventListener('click', () => {
+            const dark = document.documentElement.dataset.theme === 'dark';
+            document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+            localStorage.setItem('theme', dark ? 'light' : 'dark');
+        });
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.dataset.theme = savedTheme;
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,1015 @@
+{% load static %}
+
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ConectArte</title>
+    <meta name="description" content="Gestiona tus solicitudes de servicios artísticos en ConectArte.">
+    <script>document.documentElement.dataset.theme=localStorage.getItem('theme')||'light'</script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                }
+            }
+        }
+        </script>
+    <style>
+        @media (min-width: 1024px) {
+            .chat-card-fixed {
+                position: fixed;
+                top: 6rem;
+                bottom: 1rem;
+                right: 1.5rem;
+                width: 44%;
+                z-index: 40;
+            }
+        }
+    </style>
+
+</head>
+<body class="font-sans relative">
+    <!-- Navigation Bar -->
+    <nav class="bg-secondary/80 border-b border-vintage backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-tertiary border border-vintage rounded-xl">
+                    <!-- Paleta de Pintor -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="w-7 h-7">
+                        <path d="M32 4C16.536 4 4 16.536 4 32c0 8.284 3.582 15.75 9.314 20.98C14.9 54.4 16.9 55 19 55c3 0 5-2 5-5v-2c0-2.21 1.79-4 4-4h3c8.837 0 16-7.163 16-16 0-13.255-6.716-24-15-24z" fill="var(--accent)"/>
+                        <circle cx="18" cy="26" r="4" fill="var(--accent-light)"/>
+                        <circle cx="26" cy="16" r="4" fill="#fb923c"/>
+                        <circle cx="38" cy="16" r="4" fill="var(--accent-light)"/>
+                        <circle cx="46" cy="26" r="4" fill="#34d399"/>
+                        <circle cx="28" cy="48" r="3" fill="#e879f9" opacity="0.85"/>
+                    </svg>
+                </div>
+                <span class="text-2xl font-bold tracking-tight text-primary">ConectArte</span>
+            </div>
+            
+            <div class="flex items-center gap-6">
+                <button id="theme-toggle" class="p-2 btn-vintage text-sm">🌓</button>
+                <div class="flex items-center gap-3 bg-tertiary border border-vintage px-4 py-1.5 rounded-full">
+                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <span class="text-sm font-medium text-primary">
+                        {{ first_name|default:username }}
+                    </span>
+                    <span class="text-xs px-2 py-0.5 rounded-md font-semibold tracking-wider uppercase bg-tertiary text-accent border border-vintage">
+                        {% if role == 'client' %}Cliente{% else %}Artista{% endif %}
+                    </span>
+                </div>
+                <a href="{% url 'logout' %}" class="link-vintage font-semibold text-sm">
+                    Cerrar Sesión
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="relative z-10 max-w-7xl w-full mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left Column: Stats + Creation + List of Requests -->
+        <div class="lg:col-span-5 flex flex-col gap-6">
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="card-vintage p-3 flex items-center gap-3" id="stat-total">
+                    <span class="text-xl">📋</span>
+                    <div>
+                        <p class="text-lg font-bold text-primary leading-none" id="stat-total-num">-</p>
+                        <p class="text-[10px] text-muted font-medium uppercase tracking-wider">Totales</p>
+                    </div>
+                </div>
+                <div class="card-vintage p-3 flex items-center gap-3" id="stat-pending">
+                    <span class="text-xl">⏳</span>
+                    <div>
+                        <p class="text-lg font-bold text-amber-400 leading-none" id="stat-pending-num">-</p>
+                        <p class="text-[10px] text-muted font-medium uppercase tracking-wider">Pendientes</p>
+                    </div>
+                </div>
+                <div class="card-vintage p-3 flex items-center gap-3" id="stat-assigned">
+                    <span class="text-xl">🔄</span>
+                    <div>
+                        <p class="text-lg font-bold text-accent leading-none" id="stat-assigned-num">-</p>
+                        <p class="text-[10px] text-muted font-medium uppercase tracking-wider">Activas</p>
+                    </div>
+                </div>
+                <div class="card-vintage p-3 flex items-center gap-3" id="stat-completed">
+                    <span class="text-xl">✅</span>
+                    <div>
+                        <p class="text-lg font-bold text-secondary leading-none" id="stat-completed-num">-</p>
+                        <p class="text-[10px] text-muted font-medium uppercase tracking-wider">Completadas</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Donut + Timeline Panel -->
+            <div class="card-vintage p-4 hidden" id="stats-panel">
+                <h3 class="text-xs font-bold text-secondary uppercase tracking-wider mb-3">Progreso</h3>
+                <div class="flex items-center gap-6">
+                    <!-- Donut Chart -->
+                    <div class="flex-shrink-0" id="donut-container" style="width:100px;height:100px">
+                        <svg id="donut-svg" width="130" height="130" viewBox="0 0 130 130">
+                            <circle cx="65" cy="65" r="45" fill="none" stroke="var(--bg-tertiary)" stroke-width="18"/>
+                            <circle id="donut-pending" cx="65" cy="65" r="45" fill="none" stroke="#f59e0b" stroke-width="18"
+                                    stroke-dasharray="0 283" stroke-dashoffset="0" transform="rotate(-90 65 65)"
+                                    style="transition: stroke-dasharray 0.6s ease"/>
+                            <circle id="donut-assigned" cx="65" cy="65" r="45" fill="none" stroke="var(--accent)" stroke-width="18"
+                                    stroke-dasharray="0 283" stroke-dashoffset="0" transform="rotate(-90 65 65)"
+                                    style="transition: stroke-dasharray 0.6s ease"/>
+                            <circle id="donut-completed" cx="65" cy="65" r="45" fill="none" stroke="var(--accent-dark)" stroke-width="18"
+                                    stroke-dasharray="0 283" stroke-dashoffset="0" transform="rotate(-90 65 65)"
+                                    style="transition: stroke-dasharray 0.6s ease"/>
+                            <text id="donut-total" x="65" y="65" text-anchor="middle" dominant-baseline="central"
+                                  fill="var(--text-primary)" style="font-size:18px;font-weight:700">-</text>
+                        </svg>
+                    </div>
+                    <!-- Timeline -->
+                    <div class="flex-1 min-w-0">
+                        <div id="timeline-container" class="space-y-1 max-h-[60px] overflow-y-auto custom-scrollbar pr-1">
+                            <p class="text-xs text-muted italic">Selecciona una solicitud para ver su actividad.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Client Creation Card -->
+            {% if role == 'client' %}
+            <div class="card-vintage p-6">
+                <h2 class="text-lg font-bold mb-4 text-primary flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="var(--accent)" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    Solicitar Nuevo Servicio Artístico
+                </h2>
+                <form id="create-request-form" class="space-y-4">
+                    {% csrf_token %}
+                    <div>
+                        <label for="description" class="block text-xs font-semibold text-secondary uppercase tracking-wider mb-2">Describa la obra o restauración requerida</label>
+                        <textarea id="description" name="description" rows="3" required
+                                  class="input-vintage w-full" 
+                                  placeholder="Detalla dimensiones, materiales preferidos, tipo de servicio (ej: muralismo en sala, restauración de óleo antiguo)..."></textarea>
+                    </div>
+                    <button type="submit" class="btn-vintage w-full py-3">
+                        Crear Solicitud
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+            <!-- Requests List Card -->
+            <div class="card-vintage p-6">
+                <h2 class="text-lg font-bold mb-4 text-primary flex items-center justify-between">
+                    <span>Mis Solicitudes</span>
+                    <button id="refresh-requests-btn" class="text-muted hover:text-accent p-1 rounded-lg transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                        </svg>
+                    </button>
+                </h2>
+
+                <!-- Search & Filters -->
+                <div class="mb-4 space-y-3">
+                    <input type="text" id="search-requests" placeholder="🔍 Buscar por descripción..."
+                           class="input-vintage w-full text-sm">
+                    <div class="flex gap-2 flex-wrap" id="filter-chips">
+                        <button class="filter-chip active px-3 py-1.5 text-xs font-bold rounded-xl border transition"
+                                data-filter="all" style="background:var(--accent);color:#1a1612;border-color:var(--accent-dark)">Todas</button>
+                        <button class="filter-chip px-3 py-1.5 text-xs font-bold rounded-xl border transition"
+                                data-filter="pending" style="background:var(--bg-secondary);color:var(--text-muted);border-color:var(--border)">⏳ Pendientes</button>
+                        <button class="filter-chip px-3 py-1.5 text-xs font-bold rounded-xl border transition"
+                                data-filter="assigned" style="background:var(--bg-secondary);color:var(--text-muted);border-color:var(--border)">🔄 Activas</button>
+                        <button class="filter-chip px-3 py-1.5 text-xs font-bold rounded-xl border transition"
+                                data-filter="completed" style="background:var(--bg-secondary);color:var(--text-muted);border-color:var(--border)">✅ Completadas</button>
+                    </div>
+                </div>
+                
+                <div id="requests-list" class="space-y-3 pr-2">
+                    <p class="text-sm text-muted text-center py-8">Cargando solicitudes...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Negotiation Chat Room -->
+        <div class="lg:col-span-7 flex flex-col gap-6">
+
+            <!-- Chat Card -->
+            <div class="card-vintage lg:flex lg:flex-col chat-card-fixed">
+                <!-- Chat Header -->
+                <div class="px-6 py-4 bg-tertiary border-b border-vintage flex items-center justify-between">
+                    <div>
+                        <h2 id="chat-title" class="font-bold text-primary">Selecciona una solicitud</h2>
+                        <p id="chat-subtitle" class="text-xs text-muted mt-0.5">El historial de acuerdos se vinculará a la solicitud seleccionada.</p>
+                    </div>
+                    <div id="chat-actions" class="flex items-center gap-2"></div>
+                </div>
+
+
+
+                <!-- Before/After Comparison Panel -->
+                <div id="before-after-panel" class="hidden bg-tertiary border-b border-vintage">
+                    <div class="px-4 py-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-xs font-bold text-secondary uppercase tracking-wider">Antes y Después</h3>
+                            <button id="toggle-ba-panel" class="text-muted hover:text-accent transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div id="ba-images" class="grid grid-cols-2 gap-2 hidden">
+                            <div class="bg-secondary border border-vintage rounded-xl overflow-hidden">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-accent-dark bg-amber-500/10 px-2 py-1 border-b border-vintage">Antes</div>
+                                <div id="ba-before" class="flex items-center justify-center h-20 text-muted">
+                                    <p class="text-xs">Sin imagen</p>
+                                </div>
+                            </div>
+                            <div class="bg-secondary border border-vintage rounded-xl overflow-hidden">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-accent bg-amber-500/10 px-2 py-1 border-b border-vintage">Después</div>
+                                <div id="ba-after" class="flex items-center justify-center h-20 text-muted">
+                                    <p class="text-xs">Sin imagen</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Messages Body -->
+                <div id="chat-body" class="overflow-y-auto custom-scrollbar p-6 space-y-4 bg-primary/60 lg:flex-1 lg:min-h-0">
+                    <div class="h-full flex items-center justify-center text-center p-6 text-muted">
+                        <div>
+                            <div class="p-4 bg-secondary border border-vintage rounded-full inline-block mb-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-muted">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 2.22 1.488 4.09 3.47 4.556 1.22.287 2.47.458 3.75.512 1.28.054 2.57-.117 3.75-.404a9.147 9.147 0 0 0 5.094-5.115c.287-1.19.458-2.44.512-3.72a41.879 41.879 0 0 0-.512-3.72C21.84 5.378 19.8 4 17.5 4a41.812 41.812 0 0 0-11 0c-2.3 0-4.34 1.378-4.726 3.655a18.23 18.23 0 0 0-.51 3.725Z" />
+                                </svg>
+                            </div>
+                            <p class="text-sm">Selecciona una solicitud de la lista de la izquierda para abrir el chat de negociación directa.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Input Footer -->
+                <div id="chat-footer" class="hidden p-4 bg-tertiary border-t border-vintage">
+                    <form id="chat-form" class="flex flex-col gap-3" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div id="image-preview-area" class="hidden flex items-center gap-3 px-2">
+                            <div id="image-preview-container" class="relative">
+                                <img id="image-preview" class="h-16 w-16 object-cover rounded-lg border border-vintage" src="" alt="Preview">
+                                <button type="button" id="remove-image" class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-500 transition">&times;</button>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <label class="text-xs text-muted">Tipo:</label>
+                                <select id="image-type-select" class="text-xs bg-primary border border-vintage rounded-lg px-2 py-1.5 text-secondary focus:outline-none focus:ring-1 focus:ring-accent">
+                                    <option value="progress">Progreso</option>
+                                    <option value="before">Antes</option>
+                                    <option value="after">Después</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <input type="text" id="chat-input" placeholder="Escribe un mensaje..."
+                                   class="flex-1 px-4 py-3 input-vintage text-sm">
+                            <button type="button" id="image-upload-btn"
+                                    class="px-3 py-3 bg-tertiary hover:bg-secondary text-secondary rounded-2xl transition duration-200 flex items-center justify-center border border-vintage" title="Subir imagen">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.41a2.25 2.25 0 0 1 3.182 0l2.909 2.91m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                                </svg>
+                            </button>
+                            <input type="file" id="image-input" accept="image/*" class="hidden">
+                            <button type="submit" 
+                                    class="px-5 py-3 btn-vintage rounded-2xl flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+                                </svg>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Chat Disabled State Footer -->
+                <div id="chat-disabled-footer" class="hidden p-4 bg-tertiary border-t border-vintage text-center text-sm text-muted font-medium">
+                    El chat se habilitará cuando la IA asigne un artista a esta solicitud.
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- App Logic Script -->
+    <script>
+        const USER_ROLE = "{{ role }}";
+        const CURRENT_USER = "{{ username }}";
+        
+        let activeRequestId = null;
+        let lastMessageId = 0;
+        let chatPollInterval = null;
+        let pendingImageFile = null;
+
+        // Cargar solicitudes y stats al iniciar
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchRequests();
+            fetchStats();
+            
+            // Botón refrescar
+            document.getElementById('refresh-requests-btn').addEventListener('click', () => { fetchRequests(); fetchStats(); });
+            
+            // Filter chips
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-chip').forEach(c => {
+                        c.style.background = 'var(--bg-secondary)';
+                        c.style.color = 'var(--text-muted)';
+                        c.style.borderColor = 'var(--border)';
+                        c.removeAttribute('data-active');
+                    });
+                    chip.style.background = 'var(--accent)';
+                    chip.style.color = '#1a1612';
+                    chip.style.borderColor = 'var(--accent-dark)';
+                    chip.setAttribute('data-active', 'true');
+                    applyFilters();
+                });
+            });
+            // Marcar "Todas" como activo por defecto
+            const defaultChip = document.querySelector('.filter-chip[data-filter="all"]');
+            if (defaultChip) {
+                defaultChip.style.background = 'var(--accent)';
+                defaultChip.style.color = '#1a1612';
+                defaultChip.style.borderColor = 'var(--accent-dark)';
+                defaultChip.setAttribute('data-active', 'true');
+            }
+
+            // Search input
+            document.getElementById('search-requests').addEventListener('input', applyFilters);
+            
+            // Creación de solicitud (para clientes)
+            const createForm = document.getElementById('create-request-form');
+            if (createForm) {
+                createForm.addEventListener('submit', handleCreateRequest);
+            }
+            
+            // Formulario del chat
+            document.getElementById('chat-form').addEventListener('submit', handleSendMessage);
+            
+            // Image upload (artist only)
+            const imageUploadBtn = document.getElementById('image-upload-btn');
+            const imageInput = document.getElementById('image-input');
+            if (imageUploadBtn && imageInput) {
+                imageUploadBtn.addEventListener('click', () => imageInput.click());
+                imageInput.addEventListener('change', handleImageSelect);
+            }
+            
+            // Remove image
+            const removeImageBtn = document.getElementById('remove-image');
+            if (removeImageBtn) {
+                removeImageBtn.addEventListener('click', clearImageSelection);
+            }
+            
+            // Toggle before/after panel
+            const toggleBaBtn = document.getElementById('toggle-ba-panel');
+            if (toggleBaBtn) {
+                toggleBaBtn.addEventListener('click', toggleBeforeAfterPanel);
+            }
+        });
+
+        // Obtener solicitudes
+        async function fetchRequests() {
+            try {
+                const response = await fetch('/api/requests/');
+                const data = await response.json();
+                renderRequests(data.requests);
+            } catch (error) {
+                console.error("Error fetching requests:", error);
+            }
+        }
+
+        // Renderizar solicitudes en la UI de forma segura
+        function renderRequests(requests) {
+            const listDiv = document.getElementById('requests-list');
+            listDiv.replaceChildren(); // Método seguro para vaciar el contenedor
+
+            if (requests.length === 0) {
+                const p = document.createElement('p');
+                p.className = "text-sm text-muted text-center py-8";
+                p.textContent = "No tienes solicitudes registradas.";
+                listDiv.appendChild(p);
+                return;
+            }
+
+            requests.forEach(req => {
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-2xl border transition duration-200 cursor-pointer ${
+                    activeRequestId === req.id 
+                    ? 'bg-amber-500/10 border-accent shadow-sm' 
+                    : 'bg-secondary/60 border-vintage hover:bg-tertiary/80'
+                }`;
+                
+                // Evento click para abrir chat
+                card.addEventListener('click', () => selectRequest(req));
+
+                const header = document.createElement('div');
+                header.className = "flex justify-between items-start mb-2";
+
+                const idSpan = document.createElement('span');
+                idSpan.className = "text-xs font-bold text-accent";
+                idSpan.textContent = `#${req.id}`;
+
+                const badge = document.createElement('span');
+                badge.className = `text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                    req.status === 'pending' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                    req.status === 'assigned' ? 'bg-amber-500/15 text-accent border border-accent/30' :
+                    'bg-yellow-700/15 text-yellow-600 border border-yellow-700/25'
+                }`;
+                badge.textContent = req.status === 'pending' ? 'Pendiente' : 
+                                    req.status === 'assigned' ? 'Asignado' : 'Completado';
+
+                header.appendChild(idSpan);
+                header.appendChild(badge);
+
+                const desc = document.createElement('p');
+                desc.className = "text-sm text-primary line-clamp-2 mb-3";
+                desc.textContent = req.description;
+
+                const footer = document.createElement('div');
+                footer.className = "flex justify-between items-center text-[11px] text-muted border-t border-vintage pt-2.5";
+                
+                const parties = document.createElement('span');
+                if (USER_ROLE === 'client') {
+                    parties.textContent = `Artista: ${req.artist_name}`;
+                } else {
+                    parties.textContent = `Cliente: ${req.client_name}`;
+                }
+                
+                footer.appendChild(parties);
+
+                card.appendChild(header);
+                card.appendChild(desc);
+
+                // Si está pendiente y el usuario es cliente, mostrar botón para asignar vía IA
+                if (req.status === 'pending' && USER_ROLE === 'client') {
+                    const aiBtn = document.createElement('button');
+                    aiBtn.className = "w-full mt-3 py-1.5 btn-vintage text-xs rounded-xl flex items-center justify-center gap-1";
+                    
+                    const sparkleIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    sparkleIcon.setAttribute('fill', 'none');
+                    sparkleIcon.setAttribute('viewBox', '0 0 24 24');
+                    sparkleIcon.setAttribute('stroke-width', '2');
+                    sparkleIcon.setAttribute('stroke', 'currentColor');
+                    sparkleIcon.setAttribute('class', 'w-3.5 h-3.5');
+                    
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path.setAttribute('stroke-linecap', 'round');
+                    path.setAttribute('stroke-linejoin', 'round');
+                    path.setAttribute('d', 'M9.813 15.904 9 21l-.813-5.096L3 15l5.096-.813L9 9l.813 5.096L15 15l-5.187.904ZM18 10.5l-.5 2.5-.5-2.5-2.5-.5 2.5-.5.5-2.5.5 2.5 2.5.5-2.5.5ZM16.8 19l-.3 1.5-.3-1.5-1.5-.3 1.5-.3.3-1.5.3 1.5 1.5.3-1.5.3Z');
+                    sparkleIcon.appendChild(path);
+                    
+                    aiBtn.appendChild(sparkleIcon);
+                    
+                    const spanText = document.createElement('span');
+                    spanText.textContent = "Clasificar y Asignar IA";
+                    aiBtn.appendChild(spanText);
+
+                    aiBtn.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Evitar abrir el chat en la misma solicitud antes de asignar
+                        triggerAI(req.id);
+                    });
+                    card.appendChild(aiBtn);
+                }
+
+                listDiv.appendChild(card);
+            });
+            applyFilters();
+        }
+
+        // --- Dashboard Stats ---
+
+        async function fetchStats() {
+            try {
+                const response = await fetch('/api/stats/');
+                const data = await response.json();
+                document.getElementById('stat-total-num').textContent = data.total;
+                document.getElementById('stat-pending-num').textContent = data.pending;
+                document.getElementById('stat-assigned-num').textContent = data.assigned;
+                document.getElementById('stat-completed-num').textContent = data.completed;
+                renderDonut(data);
+            } catch (error) {
+                console.error("Error fetching stats:", error);
+            }
+        }
+
+        function renderDonut(stats) {
+            const total = stats.total || 1;
+            const pct = (v) => (v / total) * 283; // 283 = 2 * π * 45 (r=45)
+            
+            const pendingLen = pct(stats.pending);
+            const assignedLen = pct(stats.assigned);
+            const completedLen = pct(stats.completed);
+
+            document.getElementById('donut-total').textContent = total;
+            document.getElementById('donut-pending').setAttribute('stroke-dasharray', `${pendingLen} ${283 - pendingLen}`);
+            document.getElementById('donut-pending').setAttribute('stroke-dashoffset', '0');
+            
+            const assignedOffset = -pendingLen;
+            document.getElementById('donut-assigned').setAttribute('stroke-dasharray', `${assignedLen} ${283 - assignedLen}`);
+            document.getElementById('donut-assigned').setAttribute('stroke-dashoffset', assignedOffset);
+            
+            const completedOffset = assignedOffset - assignedLen;
+            document.getElementById('donut-completed').setAttribute('stroke-dasharray', `${completedLen} ${283 - completedLen}`);
+            document.getElementById('donut-completed').setAttribute('stroke-dashoffset', completedOffset);
+        }
+
+        // --- Filters & Search ---
+
+        function applyFilters() {
+            const filter = document.querySelector('.filter-chip[data-active]')?.dataset?.filter || 'all';
+            const query = document.getElementById('search-requests').value.toLowerCase().trim();
+            const cards = document.querySelectorAll('#requests-list > div');
+            
+            cards.forEach(card => {
+                let show = true;
+                if (filter !== 'all') {
+                    const badge = card.querySelector('[class*="rounded-full"]');
+                    const badgeText = badge?.textContent?.toLowerCase() || '';
+                    const filterMap = { pending: 'pendiente', assigned: 'asignado', completed: 'completado' };
+                    show = badgeText.includes(filterMap[filter] || filter);
+                }
+                if (show && query) {
+                    const desc = card.querySelector('p.text-sm.text-primary')?.textContent?.toLowerCase() || '';
+                    show = desc.includes(query);
+                }
+                card.style.display = show ? '' : 'none';
+            });
+        }
+
+        // --- Timeline ---
+
+        async function renderTimeline(requestId) {
+            const container = document.getElementById('timeline-container');
+            if (!requestId) {
+                container.innerHTML = '<p class="text-xs text-muted italic">Selecciona una solicitud para ver su actividad.</p>';
+                return;
+            }
+            try {
+                const response = await fetch(`/api/requests/${requestId}/messages/?since=0`);
+                const data = await response.json();
+                const messages = data.messages || [];
+                container.replaceChildren();
+
+                if (messages.length === 0) {
+                    container.innerHTML = '<p class="text-xs text-muted italic">Sin actividad aún.</p>';
+                    return;
+                }
+
+                // Tomar últimos 5 mensajes como timeline
+                const recent = messages.slice(-5);
+                recent.forEach(msg => {
+                    const time = new Date(msg.created_at);
+                    const diff = Date.now() - time;
+                    const relative = diff < 60000 ? 'ahora' :
+                                     diff < 3600000 ? `${Math.floor(diff/60000)}m` :
+                                     diff < 86400000 ? `${Math.floor(diff/3600000)}h` :
+                                     `${Math.floor(diff/86400000)}d`;
+                    
+                    let icon = '💬';
+                    if (msg.sender === 'system_ia') {
+                        icon = msg.content?.toLowerCase().includes('completado') ? '✅' :
+                               msg.content?.toLowerCase().includes('asignado') ? '🤖' : 'ℹ️';
+                    }
+
+                    const entry = document.createElement('div');
+                    entry.className = "flex items-start gap-2 text-xs";
+                    entry.innerHTML = `<span class="flex-shrink-0">${icon}</span><span class="flex-1 text-primary truncate">${msg.content?.substring(0, 80) || '(imagen)'}</span><span class="flex-shrink-0 text-muted">${relative}</span>`;
+                    container.appendChild(entry);
+                });
+            } catch (error) {
+                console.error("Error loading timeline:", error);
+            }
+        }
+
+        // Crear nueva solicitud (Clientes)
+        async function handleCreateRequest(e) {
+            e.preventDefault();
+            const textarea = document.getElementById('description');
+            const description = textarea.value.trim();
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            try {
+                const response = await fetch('/api/requests/create/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({ description })
+                });
+
+                const result = await response.json();
+                if (response.ok && result.ok) {
+                    textarea.value = '';
+                    fetchRequests();
+                    fetchStats();
+                } else {
+                    alert(result.error || 'Error al crear la solicitud.');
+                }
+            } catch (error) {
+                console.error("Error creating request:", error);
+            }
+        }
+
+        // Ejecutar asignación de la IA (Clientes)
+        async function triggerAI(id) {
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            try {
+                const response = await fetch(`/api/requests/${id}/classify/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    }
+                });
+
+                const result = await response.json();
+                if (response.ok && result.ok) {
+                    fetchRequests();
+                    fetchStats();
+                    // Si estaba seleccionada la solicitud abierta, actualizarla
+                    if (activeRequestId === id) {
+                        selectRequest(result.job_request);
+                    }
+                } else {
+                    alert(result.error || 'Error al clasificar.');
+                }
+            } catch (error) {
+                console.error("Error calling AI agent:", error);
+            }
+        }
+
+        // Completar la solicitud (Clientes)
+        async function completeRequest(id) {
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            try {
+                const response = await fetch(`/api/requests/${id}/complete/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    }
+                });
+
+                const result = await response.json();
+                if (response.ok && result.ok) {
+                    fetchRequests();
+                    fetchStats();
+                    // Refrescar el chat para ver el estado completed y el mensaje de sistema
+                    if (activeRequestId === id) {
+                        const updatedReq = { id, status: 'completed' };
+                        selectRequest(updatedReq);
+                    }
+                } else {
+                    alert(result.error || 'Error al completar la solicitud.');
+                }
+            } catch (error) {
+                console.error("Error completing request:", error);
+            }
+        }
+
+        // Seleccionar una solicitud y abrir su chat
+        function selectRequest(req) {
+            activeRequestId = req.id;
+            lastMessageId = 0;
+            clearImageSelection();
+            
+            // Mostrar panel stats + timeline
+            document.getElementById('stats-panel').classList.remove('hidden');
+            renderTimeline(req.id);
+            
+            // Limpiar polling previo
+            if (chatPollInterval) {
+                clearInterval(chatPollInterval);
+            }
+            
+            // Cargar imágenes antes/después
+            fetchBeforeAfter(req.id);
+
+            // Actualizar estado activo en la lista
+            fetchRequests();
+
+            // Configurar el Header del chat de forma segura
+            const chatTitle = document.getElementById('chat-title');
+            const chatSubtitle = document.getElementById('chat-subtitle');
+            chatTitle.textContent = `Negociación de Solicitud #${req.id}`;
+            chatSubtitle.textContent = req.description ? req.description : `Negociación del servicio artístico.`;
+
+            // Configurar botones de acción del Header
+            const chatActions = document.getElementById('chat-actions');
+            chatActions.replaceChildren();
+
+            if (req.status === 'assigned' && USER_ROLE === 'client') {
+                const completeBtn = document.createElement('button');
+                completeBtn.className = "px-3 py-1.5 bg-yellow-700 hover:bg-yellow-600 text-zinc-950 font-bold text-xs rounded-xl shadow transition duration-150";
+                completeBtn.textContent = "Marcar Completado";
+                completeBtn.addEventListener('click', () => completeRequest(req.id));
+                chatActions.appendChild(completeBtn);
+            }
+
+            // Configurar el footer según el estado
+            const footer = document.getElementById('chat-footer');
+            const disabledFooter = document.getElementById('chat-disabled-footer');
+            
+            if (req.status === 'pending') {
+                footer.classList.add('hidden');
+                disabledFooter.classList.remove('hidden');
+                
+                // Limpiar cuerpo del chat
+                const body = document.getElementById('chat-body');
+                body.replaceChildren();
+                const container = document.createElement('div');
+                container.className = "h-full flex items-center justify-center text-center p-6 text-zinc-500";
+                const text = document.createElement('p');
+                text.className = "text-sm";
+                text.textContent = "El chat se habilitará cuando la IA clasifique y asigne un artista a esta solicitud.";
+                container.appendChild(text);
+                body.appendChild(container);
+            } else {
+                // Habilitado para chatear
+                disabledFooter.classList.add('hidden');
+                footer.classList.remove('hidden');
+
+                const chatInput = document.getElementById('chat-input');
+                if (req.status === 'completed') {
+                    // Chat en modo solo lectura
+                    chatInput.disabled = true;
+                    chatInput.placeholder = "Este servicio ha sido completado. Chat cerrado.";
+                    chatInput.classList.add('opacity-50');
+                } else {
+                    chatInput.disabled = false;
+                    chatInput.placeholder = "Escribe un mensaje...";
+                    chatInput.classList.remove('opacity-50');
+                }
+
+                // Cargar mensajes iniciales
+                fetchMessages(true);
+
+                // Activar polling cada 3 segundos
+                chatPollInterval = setInterval(() => fetchMessages(false), 3000);
+            }
+        }
+
+        // Obtener mensajes del chat
+        async function fetchMessages(scrollDown = false) {
+            if (!activeRequestId) return;
+
+            try {
+                const response = await fetch(`/api/requests/${activeRequestId}/messages/?since=${lastMessageId}`);
+                const data = await response.json();
+
+                if (data.messages && data.messages.length > 0) {
+                    renderMessages(data.messages, scrollDown);
+                }
+            } catch (error) {
+                console.error("Error fetching messages:", error);
+            }
+        }
+
+        // Renderizar mensajes de forma segura
+        function renderMessages(messages, scrollDown) {
+            const body = document.getElementById('chat-body');
+            
+            // Si es la carga inicial (lastMessageId === 0), limpiar placeholders
+            if (lastMessageId === 0) {
+                body.replaceChildren();
+            }
+
+            messages.forEach(msg => {
+                // Actualizar último ID
+                if (msg.id > lastMessageId) {
+                    lastMessageId = msg.id;
+                }
+
+                const msgDiv = document.createElement('div');
+
+                // Mensaje eliminado por admin
+                if (msg.is_deleted) {
+                    msgDiv.className = "flex flex-col mx-auto bg-tertiary border border-dashed border-vintage text-muted text-xs text-center py-2 px-4 italic max-w-[90%]";
+                    msgDiv.textContent = '🗑 Este mensaje fue eliminado por un administrador.';
+                    body.appendChild(msgDiv);
+                    return;
+                }
+
+                msgDiv.className = "flex flex-col max-w-[80%] rounded-2xl p-4 shadow-sm";
+
+                const isSystem = msg.sender === 'system_ia';
+                const isMe = msg.sender === CURRENT_USER;
+
+                if (isSystem) {
+                    msgDiv.className += " mx-auto bg-tertiary border border-vintage text-muted text-xs text-center py-2 px-4 italic max-w-[90%]";
+                } else if (isMe) {
+                    msgDiv.className += " ml-auto bg-accent text-[#1a1612] rounded-tr-none font-medium";
+                } else {
+                    msgDiv.className += " mr-auto bg-secondary text-primary border border-vintage rounded-tl-none";
+                }
+
+                // Autor (si no es sistema)
+                if (!isSystem && !isMe) {
+                    const senderSpan = document.createElement('span');
+                    senderSpan.className = "text-[10px] font-bold text-accent-dark mb-1 block uppercase tracking-wider";
+                    senderSpan.textContent = msg.sender_name;
+                    msgDiv.appendChild(senderSpan);
+                }
+
+                // Contenido (texto)
+                if (msg.content) {
+                    const textP = document.createElement('p');
+                    textP.className = "text-sm whitespace-pre-wrap break-words leading-relaxed";
+                    textP.textContent = msg.content;
+                    msgDiv.appendChild(textP);
+                }
+
+                // Contenido (imagen)
+                if (msg.image_url) {
+                    const imgContainer = document.createElement('div');
+                    imgContainer.className = "mt-2";
+                    const img = document.createElement('img');
+                    img.src = msg.image_url;
+                    img.alt = msg.image_type || 'imagen';
+                    img.className = "max-w-full h-20 object-cover rounded-lg border border-vintage cursor-pointer hover:opacity-90 transition";
+                    img.addEventListener('click', () => window.open(msg.image_url, '_blank'));
+                    imgContainer.appendChild(img);
+
+                    if (msg.image_type) {
+                        const typeLabel = document.createElement('span');
+                        typeLabel.className = "inline-block text-[10px] font-bold uppercase tracking-wider mt-1 px-2 py-0.5 rounded " + (
+                            msg.image_type === 'before' ? 'bg-amber-500/15 text-accent-dark' :
+                            msg.image_type === 'after' ? 'bg-amber-500/15 text-accent' :
+                            'bg-amber-500/10 text-secondary'
+                        );
+                        typeLabel.textContent = msg.image_type === 'before' ? 'Antes' :
+                                                msg.image_type === 'after' ? 'Después' : 'Progreso';
+                        imgContainer.appendChild(typeLabel);
+                    }
+                    msgDiv.appendChild(imgContainer);
+                }
+
+                // Hora
+                const timeSpan = document.createElement('span');
+                timeSpan.className = `text-[9px] mt-1.5 self-end ${isMe ? 'text-[#5d4e37]' : 'text-muted'}`;
+                const date = new Date(msg.created_at);
+                timeSpan.textContent = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                msgDiv.appendChild(timeSpan);
+
+                body.appendChild(msgDiv);
+            });
+
+            if (scrollDown || messages.length > 0) {
+                body.scrollTop = body.scrollHeight;
+            }
+        }
+
+        // --- Funciones de Imágenes Antes/Después ---
+
+        async function fetchBeforeAfter(requestId) {
+            try {
+                const response = await fetch(`/api/requests/${requestId}/before-after/`);
+                const data = await response.json();
+
+                const panel = document.getElementById('before-after-panel');
+                const beforeDiv = document.getElementById('ba-before');
+                const afterDiv = document.getElementById('ba-after');
+
+                if (data.before && data.before.image_url) {
+                    beforeDiv.innerHTML = `<img src="${data.before.image_url}" alt="Antes" class="w-full h-20 object-cover cursor-pointer" onclick="window.open('${data.before.image_url}', '_blank')">`;
+                } else {
+                    beforeDiv.innerHTML = `<p class="text-xs text-zinc-600">Sin imagen</p>`;
+                }
+
+                if (data.after && data.after.image_url) {
+                    afterDiv.innerHTML = `<img src="${data.after.image_url}" alt="Después" class="w-full h-20 object-cover cursor-pointer" onclick="window.open('${data.after.image_url}', '_blank')">`;
+                } else {
+                    afterDiv.innerHTML = `<p class="text-xs text-zinc-600">Sin imagen</p>`;
+                }
+
+                const baImages = document.getElementById('ba-images');
+                const hasImages = (data.before && data.before.image_url) || (data.after && data.after.image_url);
+                if (hasImages) {
+                    panel.classList.remove('hidden');
+                    baImages.classList.remove('hidden');
+                } else {
+                    panel.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error("Error fetching before/after:", error);
+            }
+        }
+
+        function toggleBeforeAfterPanel() {
+            const container = document.getElementById('ba-images');
+            const icon = document.querySelector('#toggle-ba-panel svg');
+            container.classList.toggle('hidden');
+            if (container.classList.contains('hidden')) {
+                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 8.25 7.5 7.5 7.5-7.5" />`;
+            } else {
+                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />`;
+            }
+        }
+
+        function handleImageSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            pendingImageFile = file;
+
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const preview = document.getElementById('image-preview');
+                preview.src = ev.target.result;
+                document.getElementById('image-preview-area').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearImageSelection() {
+            pendingImageFile = null;
+            const imageInput = document.getElementById('image-input');
+            if (imageInput) imageInput.value = '';
+            const previewArea = document.getElementById('image-preview-area');
+            if (previewArea) previewArea.classList.add('hidden');
+            const preview = document.getElementById('image-preview');
+            if (preview) preview.src = '';
+        }
+
+        // Enviar mensaje (soporta texto + imágenes)
+        async function handleSendMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const content = input.value.trim();
+            if (!content && !pendingImageFile) return;
+            if (!activeRequestId) return;
+
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            let response;
+            if (pendingImageFile) {
+                const formData = new FormData();
+                if (content) formData.append('content', content);
+                formData.append('image', pendingImageFile);
+                const imageType = document.getElementById('image-type-select')?.value || 'progress';
+                formData.append('image_type', imageType);
+
+                response = await fetch(`/api/requests/${activeRequestId}/messages/send/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken },
+                    body: formData
+                });
+            } else {
+                response = await fetch(`/api/requests/${activeRequestId}/messages/send/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({ content })
+                });
+            }
+
+            input.value = '';
+            clearImageSelection();
+
+            try {
+                const result = await response.json();
+                if (response.ok && result.ok) {
+                    fetchMessages(true);
+                    fetchBeforeAfter(activeRequestId);
+                    renderTimeline(activeRequestId);
+                } else {
+                    alert(result.error || 'No se pudo enviar el mensaje.');
+                }
+            } catch (error) {
+                console.error("Error sending message:", error);
+            }
+        }
+    </script>
+    <script>
+      // Theme toggle script
+      const toggleBtn = document.getElementById('theme-toggle');
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+          const dark = document.documentElement.dataset.theme === 'dark';
+          document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+          localStorage.setItem('theme', dark ? 'light' : 'dark');
+        });
+      }
+      // Initialize theme
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.dataset.theme = savedTheme;
+    </script>
+</body>
+</html>

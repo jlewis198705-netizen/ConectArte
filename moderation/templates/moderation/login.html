@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Iniciar Sesión - ConectArte</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    {% load static %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --bg-primary: #fdf6e3;
+            --bg-secondary: #f5ead7;
+            --bg-tertiary: #ebe0c8;
+            --text-primary: #2c241a;
+            --text-secondary: #5d4e37;
+            --text-muted: #8b7d6b;
+            --accent: #c49a2a;
+            --accent-dark: #a88222;
+            --accent-light: #e8c56d;
+            --border: #d4c4a8;
+            --shadow: rgba(44, 36, 26, 0.15);
+            --shadow-strong: rgba(44, 36, 26, 0.25);
+            --focus-ring: rgba(196, 154, 42, 0.4);
+        }
+        [data-theme="dark"] {
+            --bg-primary: #1a1612;
+            --bg-secondary: #241f1a;
+            --bg-tertiary: #2d261f;
+            --text-primary: #f5e6c8;
+            --text-secondary: #c9b896;
+            --text-muted: #9a8b72;
+            --accent: #d4a835;
+            --accent-dark: #b8922a;
+            --accent-light: #e8c56d;
+            --border: #4a3f2e;
+            --shadow: rgba(0, 0, 0, 0.4);
+            --shadow-strong: rgba(0, 0, 0, 0.6);
+            --focus-ring: rgba(212, 168, 53, 0.5);
+        }
+        html, body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
+        }
+        body {
+            background-image: url('{% static "images/marmolito1.png" %}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-color: rgba(253, 246, 227, 0.7);
+            pointer-events: none;
+            z-index: 0;
+        }
+        [data-theme="dark"] body::before {
+            background-color: rgba(26, 22, 18, 0.75);
+        }
+        .card-vintage {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px var(--shadow), inset 0 1px 0 var(--accent-light);
+        }
+        .btn-vintage {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: #1a1612;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--accent-dark);
+            box-shadow: 0 2px 8px var(--shadow), inset 0 1px 0 var(--accent-light);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .btn-vintage:hover {
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            box-shadow: 0 4px 16px var(--shadow-strong), inset 0 1px 0 var(--accent-light);
+            transform: translateY(-1px);
+        }
+        .input-vintage {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-family: inherit;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+        .input-vintage:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--focus-ring);
+        }
+        .input-vintage::placeholder {
+            color: var(--text-muted);
+        }
+        ::selection {
+            background: var(--accent);
+            color: #1a1612;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 relative">
+    <button id="theme-toggle" class="absolute top-4 right-4 z-50 btn-vintage text-sm">🌓</button>
+
+    <div class="relative z-10 card-vintage p-8 w-full max-w-md">
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center p-3 bg-tertiary rounded-2xl border border-vintage mb-3" style="background: var(--bg-tertiary); border-color: var(--border);">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="w-10 h-10">
+                    <path d="M32 4C16.536 4 4 16.536 4 32c0 8.284 3.582 15.75 9.314 20.98C14.9 54.4 16.9 55 19 55c3 0 5-2 5-5v-2c0-2.21 1.79-4 4-4h3c8.837 0 16-7.163 16-16 0-13.255-6.716-24-15-24z" fill="var(--accent)"/>
+                    <circle cx="18" cy="26" r="4" fill="var(--accent-light)"/>
+                    <circle cx="26" cy="16" r="4" fill="#fb923c"/>
+                    <circle cx="38" cy="16" r="4" fill="var(--accent-light)"/>
+                    <circle cx="46" cy="26" r="4" fill="#34d399"/>
+                </svg>
+            </div>
+            <h1 class="text-3xl font-bold tracking-tight" style="color: var(--text-primary);">Admin Panel</h1>
+            <p class="text-sm" style="color: var(--text-muted);">ConectArte - Gestión de administración</p>
+        </div>
+
+        {% if redirected %}
+        <div class="p-4 mb-6 text-sm text-center" style="background: rgba(196, 154, 42, 0.1); border: 1px solid var(--accent); border-radius: 8px; color: var(--text-secondary);">
+            Ya tienes una sesión iniciada como <strong>{{ user.username }}</strong>, pero no tiene permisos de administrador.
+            <br>Inicia sesión con una cuenta de administrador.
+        </div>
+        {% endif %}
+
+        {% if error %}
+        <div class="p-4 mb-6 text-sm text-center" style="background: rgba(196, 154, 42, 0.1); border: 1px solid var(--accent); border-radius: 8px; color: var(--text-secondary);">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" class="space-y-5">
+            {% csrf_token %}
+            <div>
+                <label for="username" class="block text-xs font-semibold uppercase tracking-wider mb-2" style="color: var(--text-secondary);">Usuario</label>
+                <input type="text" id="username" name="username" value="{{ request.POST.username }}" required
+                       class="input-vintage"
+                       placeholder="Usuario administrador">
+            </div>
+
+            <div class="relative">
+                <label for="password" class="block text-xs font-semibold uppercase tracking-wider mb-2" style="color: var(--text-secondary);">Contraseña</label>
+                <input type="password" id="password" name="password" required
+                       class="input-vintage pr-12"
+                       placeholder="••••••••">
+                <button type="button" id="toggle-password"
+                        class="absolute right-3 bottom-2.5 p-1 rounded-lg transition"
+                        style="color: var(--text-muted);" tabindex="-1">
+                    <svg id="eye-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                </button>
+            </div>
+
+            <button type="submit" class="btn-vintage w-full py-3">
+                Iniciar Sesión
+            </button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('theme-toggle')?.addEventListener('click', () => {
+            const dark = document.documentElement.dataset.theme === 'dark';
+            document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+            localStorage.setItem('theme', dark ? 'light' : 'dark');
+        });
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.dataset.theme = savedTheme;
+
+        document.getElementById('toggle-password')?.addEventListener('click', () => {
+            const pwd = document.getElementById('password');
+            const icon = document.getElementById('eye-icon');
+            if (pwd.type === 'password') {
+                pwd.type = 'text';
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/>';
+            } else {
+                pwd.type = 'password';
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>';
+            }
+        });
+    </script>
+</body>
+</html>

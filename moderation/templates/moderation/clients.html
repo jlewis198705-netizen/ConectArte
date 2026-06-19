@@ -1,0 +1,136 @@
+{% extends 'moderation/base.html' %}
+
+{% block title %}Clientes - Admin ConectArte{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold tracking-tight" style="color: var(--text-primary);">Gestión de Clientes</h1>
+    <p class="mt-2" style="color: var(--text-muted);">Activa o desactiva cuentas de clientes en la plataforma.</p>
+</div>
+
+<div class="card-vintage overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr style="border-bottom: 1px solid var(--border);">
+                    <th class="text-left px-6 py-4 text-xs font-semibold uppercase tracking-wider" style="color: var(--text-muted);">Usuario</th>
+                    <th class="text-left px-6 py-4 text-xs font-semibold uppercase tracking-wider" style="color: var(--text-muted);">Nombre</th>
+                    <th class="text-left px-6 py-4 text-xs font-semibold uppercase tracking-wider" style="color: var(--text-muted);">Email</th>
+                    <th class="text-center px-6 py-4 text-xs font-semibold uppercase tracking-wider" style="color: var(--text-muted);">Solicitudes</th>
+                    <th class="text-left px-6 py-4 text-xs font-semibold uppercase tracking-wider" style="color: var(--text-muted);">Estado</th>
+                    <th class="text-right px-6 py-4 text-xs font-semibold uppercase tracking-wider" style="color: var(--text-muted);">Acción</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y" style="border-color: var(--border);">
+                {% for client in clients %}
+                <tr class="hover:opacity-80 transition" id="client-row-{{ client.id }}" style="background: transparent;">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold" style="background: var(--accent-light); color: #1a1612; border: 1px solid var(--accent);">
+                                {{ client.first_name|first|upper|default:client.username|first|upper }}
+                            </div>
+                            <span class="font-medium" style="color: var(--text-primary);">{{ client.username }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4" style="color: var(--text-secondary);">{{ client.first_name }} {{ client.last_name }}</td>
+                    <td class="px-6 py-4" style="color: var(--text-muted);">{{ client.email|default:"—" }}</td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold" style="background: rgba(196, 154, 42, 0.1); color: var(--accent-dark); border: 1px solid var(--accent);">
+                            {{ client.total_requests }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold" style="{% if client.is_active %}background: rgba(196, 154, 42, 0.1); color: var(--accent-dark); border: 1px solid var(--accent);{% else %}background: rgba(139, 125, 107, 0.15); color: var(--text-muted); border: 1px solid var(--border);{% endif %}">
+                            <span class="w-1.5 h-1.5 rounded-full" style="{% if client.is_active %}background: var(--accent);{% else %}background: var(--text-muted);{% endif %}"></span>
+                            {% if client.is_active %}Activo{% else %}Inactivo{% endif %}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
+                        <button onclick="toggleClient({{ client.id }})"
+                                class="px-4 py-2 rounded-xl text-sm font-semibold transition border"
+                                style="{% if client.is_active %}background: rgba(196, 154, 42, 0.1); color: var(--accent-dark); border-color: var(--accent);{% else %}background: var(--accent-light); color: #1a1612; border-color: var(--accent);{% endif %}">
+                            {% if client.is_active %}Desactivar{% else %}Activar{% endif %}
+                        </button>
+                        <button onclick="deleteClient({{ client.id }})" title="Eliminar cliente"
+                                class="p-2 rounded-xl transition border"
+                                style="border-color: rgba(239, 68, 68, 0.2); color: #ef4444; background: rgba(239, 68, 68, 0.05);">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center" style="color: var(--text-muted);">
+                        No hay clientes registrados en la plataforma.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="toast" class="fixed bottom-6 right-6 hidden z-50 px-6 py-4 card-vintage shadow-2xl transition-all duration-300"></div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    async function toggleClient(userId) {
+        const row = document.getElementById('client-row-' + userId);
+
+        try {
+            const resp = await fetch('{% url "mod_toggle_client" 0 %}'.replace('0', userId), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: '{}'
+            });
+
+            const result = await resp.json();
+            if (result.ok) {
+                showToast('Cliente ' + result.status + ' correctamente.', result.is_active ? 'success' : 'warning');
+                setTimeout(() => location.reload(), 800);
+            } else {
+                showToast('Error: ' + (result.error || 'desconocido'), 'error');
+            }
+        } catch (e) {
+            showToast('Error de conexión con el servidor.', 'error');
+        }
+    }
+
+    async function deleteClient(userId) {
+        if (!confirm('¿Estás seguro de eliminar este cliente? Esta acción no se puede deshacer.')) return;
+
+        try {
+            const resp = await fetch('{% url "mod_delete_client" 0 %}'.replace('0', userId), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: '{}'
+            });
+            const result = await resp.json();
+            if (result.ok) {
+                showToast('Cliente eliminado correctamente.', 'success');
+                document.getElementById('client-row-' + userId).remove();
+            } else {
+                showToast('Error: ' + (result.error || 'desconocido'), 'error');
+            }
+        } catch (e) {
+            showToast('Error de conexión con el servidor.', 'error');
+        }
+    }
+
+    function showToast(message, type) {
+        const toast = document.getElementById('toast');
+        const colors = {
+            success: 'border-emerald-500/30 text-emerald-400',
+            warning: 'border-red-500/30 text-red-400',
+            error: 'border-red-500/30 text-red-400',
+        };
+        toast.className = 'fixed bottom-6 right-6 z-50 px-6 py-4 card-vintage shadow-2xl transition-all duration-300 ' + (colors[type] || colors.success);
+        toast.textContent = message;
+        toast.classList.remove('hidden');
+        setTimeout(() => { toast.classList.add('hidden'); }, 3500);
+    }
+</script>
+{% endblock %}

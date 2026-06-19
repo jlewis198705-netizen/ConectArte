@@ -1,0 +1,181 @@
+{% extends 'moderation/base.html' %}
+
+{% block title %}Negociaciones - Admin ConectArte{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold tracking-tight" style="color: var(--text-primary);">Centro de Negociación</h1>
+    <p class="mt-2" style="color: var(--text-muted);">Historial de chats y acuerdos de precios para auditoría.</p>
+</div>
+
+{% if jobs_data %}
+<div class="space-y-4">
+    {% for item in jobs_data %}
+    <div class="card-vintage overflow-hidden">
+        <button onclick="toggleJob({{ item.job.id }})"
+                class="w-full flex items-center justify-between p-6 transition text-left" style="hover:background: var(--bg-tertiary);">
+            <div class="flex items-center gap-4">
+                <div class="flex -space-x-2">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2" style="background: var(--accent-light); color: #1a1612; border-color: var(--accent);">
+                        {{ item.job.client.first_name|first|upper|default:item.job.client.username|first|upper }}
+                    </div>
+                    {% if item.job.artist %}
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2" style="background: var(--bg-tertiary); color: var(--text-secondary); border-color: var(--border);">
+                        {{ item.job.artist.first_name|first|upper|default:item.job.artist.username|first|upper }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div>
+                    <p class="font-semibold" style="color: var(--text-primary);">Solicitud #{{ item.job.id }}</p>
+                    <p class="text-sm" style="color: var(--text-muted);">
+                        {{ item.job.client.first_name|default:item.job.client.username }}
+                        {% if item.job.artist %} → {{ item.job.artist.first_name|default:item.job.artist.username }}{% endif %}
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-xs" style="color: var(--text-muted);">{{ item.message_count }} mensajes</span>
+                <span class="px-3 py-1 rounded-full text-xs font-semibold"
+                      style="{% if item.job.status == 'pending' %}background: rgba(196, 154, 42, 0.1); color: var(--accent-dark); border: 1px solid var(--accent);{% elif item.job.status == 'assigned' %}background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border);{% else %}background: rgba(196, 154, 42, 0.15); color: var(--accent-dark); border: 1px solid var(--accent);{% endif %}">
+                    {{ item.job.get_status_display }}
+                </span>
+                <button onclick="deleteJob({{ item.job.id }})" title="Eliminar solicitud"
+                        class="p-1.5 rounded-lg transition" style="color: var(--text-muted); hover: color: var(--accent-dark);">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
+                <svg class="w-5 h-5 transition-transform duration-200" id="chevron-{{ item.job.id }}" style="color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+        </button>
+
+        <div id="job-details-{{ item.job.id }}" class="hidden" style="border-top: 1px solid var(--border);">
+            <div class="p-6">
+                <div class="mb-4 p-4 rounded-xl" style="background: var(--bg-primary);">
+                    <p class="text-sm mb-1" style="color: var(--text-muted);">Descripción del servicio:</p>
+                    <p class="text-sm" style="color: var(--text-primary);">{{ item.job.description }}</p>
+                    <p class="text-xs mt-2" style="color: var(--text-muted);">Creado: {{ item.job.created_at|date:"d/m/Y H:i" }}</p>
+                </div>
+
+                {% if item.messages %}
+                <div class="space-y-3 max-h-96 overflow-y-auto custom-scrollbar pr-2">
+                    {% for msg in item.messages %}
+                    <div class="flex items-start gap-3 {% if msg.sender.username == 'system_ia' %}opacity-60{% endif %}">
+                        <div class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold"
+                             style="{% if msg.sender.username == 'system_ia' %}background: var(--bg-tertiary); color: var(--text-muted);{% elif msg.sender.id == item.job.client.id %}background: var(--accent-light); color: #1a1612; border: 1px solid var(--accent);{% else %}background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border);{% endif %}">
+                            {{ msg.sender.first_name|first|upper|default:msg.sender.username|first|upper }}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-medium" style="color: var(--text-primary);">{{ msg.sender.first_name|default:msg.sender.username }}</span>
+                                <span class="text-xs" style="color: var(--text-muted);">{{ msg.created_at|date:"H:i" }}</span>
+                            </div>
+                            <p class="text-sm mt-0.5" style="color: var(--text-secondary);">{{ msg.content }}</p>
+                            {% if msg.image %}
+                            <div class="mt-2 relative group inline-block">
+                                <img src="{{ msg.image.url }}" alt="Imagen" class="max-w-xs max-h-48 rounded-xl object-cover">
+                                <button onclick="deleteImage({{ msg.id }}, this)" title="Eliminar imagen"
+                                        class="absolute top-2 right-2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                        style="background: rgba(0,0,0,0.6); color: #ef4444;">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                </button>
+                                {% if msg.image_type %}
+                                <span class="text-xs mt-1 block" style="color: var(--text-muted);">{{ msg.get_image_type_display }}</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-sm text-center py-4" style="color: var(--text-muted);">No hay mensajes en esta negociación.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card-vintage p-12 text-center">
+    <div class="inline-flex items-center justify-center p-4 rounded-2xl mb-4" style="background: var(--bg-tertiary); border: 1px solid var(--border);">
+        <svg class="w-10 h-10" style="color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+    </div>
+    <h3 class="text-lg font-semibold" style="color: var(--text-primary);">Sin negociaciones</h3>
+    <p class="text-sm mt-2" style="color: var(--text-muted);">No hay solicitudes de trabajo registradas en el sistema.</p>
+</div>
+{% endif %}
+<div id="toast" class="fixed bottom-6 right-6 hidden z-50 px-6 py-4 card-vintage shadow-2xl transition-all duration-300"></div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function toggleJob(jobId) {
+        const details = document.getElementById('job-details-' + jobId);
+        const chevron = document.getElementById('chevron-' + jobId);
+        if (details.classList.contains('hidden')) {
+            details.classList.remove('hidden');
+            chevron.classList.add('rotate-180');
+        } else {
+            details.classList.add('hidden');
+            chevron.classList.remove('rotate-180');
+        }
+    }
+
+    async function deleteImage(msgId, btn) {
+        if (!confirm('¿Eliminar esta imagen? No se puede deshacer.')) return;
+
+        try {
+            const resp = await fetch('{% url "mod_delete_image" 0 %}'.replace('0', msgId), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: '{}'
+            });
+            const result = await resp.json();
+            if (result.ok) {
+                const container = btn.closest('.mt-2');
+                container.remove();
+                showToast('Imagen eliminada.', 'success');
+            } else {
+                showToast('Error: ' + (result.error || 'desconocido'), 'error');
+            }
+        } catch (e) {
+            showToast('Error de conexión.', 'error');
+        }
+    }
+
+    async function deleteJob(jobId) {
+        if (!confirm('¿Estás seguro de eliminar esta solicitud? Se eliminarán todos los mensajes e imágenes asociados. Esta acción no se puede deshacer.')) {
+            return;
+        }
+
+        try {
+            const resp = await fetch('{% url "mod_delete_job" 0 %}'.replace('0', jobId), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: '{}'
+            });
+
+            const result = await resp.json();
+            if (result.ok) {
+                showToast('Solicitud #' + jobId + ' eliminada correctamente.', 'success');
+                setTimeout(() => location.reload(), 800);
+            } else {
+                showToast('Error: ' + (result.error || 'desconocido'), 'error');
+            }
+        } catch (e) {
+            showToast('Error de conexión con el servidor.', 'error');
+        }
+    }
+
+    function showToast(message, type) {
+        const toast = document.getElementById('toast');
+        const colors = {
+            success: 'border-emerald-500/30 text-emerald-400',
+            error: 'border-red-500/30 text-red-400',
+        };
+        toast.className = 'fixed bottom-6 right-6 z-50 px-6 py-4 card-vintage shadow-2xl transition-all duration-300 ' + (colors[type] || colors.success);
+        toast.textContent = message;
+        toast.classList.remove('hidden');
+        setTimeout(() => { toast.classList.add('hidden'); }, 3500);
+    }
+</script>
+{% endblock %}

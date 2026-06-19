@@ -1,0 +1,191 @@
+{% extends 'moderation/base.html' %}
+
+{% block title %}Revisión de Contenido - Admin ConectArte{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold tracking-tight" style="color: var(--text-primary);">Revisión de Contenido</h1>
+    <p class="mt-2" style="color: var(--text-muted);">Fotos de 'antes y después' subidas por los artistas. Aprueba o marca como inapropiado.</p>
+</div>
+
+{% if items %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for item in items %}
+    <div class="card-vintage overflow-hidden" id="content-card-{{ item.message.id }}">
+        <div class="aspect-video relative overflow-hidden" style="background: var(--bg-primary);">
+            {% if item.message.image %}
+            <img src="{{ item.message.image.url }}"
+                 alt="Imagen {{ item.message.get_image_type_display }}"
+                 class="w-full h-full object-cover">
+            {% endif %}
+            <div class="absolute top-3 left-3">
+                <span class="px-3 py-1 rounded-full text-xs font-semibold" style="background: var(--accent-light); color: #1a1612; border: 1px solid var(--accent);">
+                    {{ item.message.get_image_type_display }}
+                </span>
+            </div>
+            <div class="absolute top-3 right-3">
+                <span class="px-3 py-1 rounded-full text-xs font-semibold"
+                      style="{% if item.flag_status == 'approved' %}background: rgba(196, 154, 42, 0.15); color: var(--accent-dark); border: 1px solid var(--accent);{% elif item.flag_status == 'inappropriate' %}background: rgba(139, 125, 107, 0.2); color: var(--text-muted); border: 1px solid var(--border);{% else %}background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border);{% endif %}">
+                    {% if item.flag_status == 'approved' %}Aprobado
+                    {% elif item.flag_status == 'inappropriate' %}Inapropiado
+                    {% else %}Pendiente{% endif %}
+                </span>
+            </div>
+        </div>
+        <div class="p-4 space-y-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style="background: var(--accent-light); color: #1a1612; border: 1px solid var(--accent);">
+                        {{ item.message.sender.first_name|first|upper|default:item.message.sender.username|first|upper }}
+                    </div>
+                    <span class="text-sm font-medium" style="color: var(--text-primary);">{{ item.message.sender.first_name|default:item.message.sender.username }}</span>
+                </div>
+                <span class="text-xs" style="color: var(--text-muted);">{{ item.message.created_at|date:"d/m/Y H:i" }}</span>
+            </div>
+            <p class="text-sm" style="color: var(--text-secondary); line-clamp: 2;">{{ item.message.content|truncatechars:120 }}</p>
+            <p class="text-xs" style="color: var(--text-muted);">Solicitud #{{ item.message.job_request.id }}</p>
+
+            <div class="flex gap-2 pt-1" id="actions-{{ item.message.id }}">
+                <button onclick="reviewContent({{ item.message.id }}, 'approved')"
+                        class="flex-1 px-3 py-2 rounded-xl text-sm font-semibold transition border"
+                        style="background: rgba(196, 154, 42, 0.1); color: var(--accent-dark); border: 1px solid var(--accent);">
+                    Aprobar
+                </button>
+                <button onclick="reviewContent({{ item.message.id }}, 'inappropriate')"
+                        class="flex-1 px-3 py-2 rounded-xl text-sm font-semibold transition border"
+                        style="background: rgba(139, 125, 107, 0.1); color: var(--text-muted); border: 1px solid var(--border);">
+                    Inapropiado
+                </button>
+                <button onclick="deleteMessage({{ item.message.id }})"
+                        class="px-3 py-2 rounded-xl text-sm font-semibold transition border"
+                        style="background: rgba(220, 80, 80, 0.1); color: #dc5050; border: 1px solid rgba(220, 80, 80, 0.3);"
+                        title="Eliminar mensaje">
+                    🗑
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card-vintage p-12 text-center">
+    <div class="inline-flex items-center justify-center p-4 rounded-2xl mb-4" style="background: var(--bg-tertiary); border: 1px solid var(--border);">
+        <svg class="w-10 h-10" style="color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+    </div>
+    <h3 class="text-lg font-semibold" style="color: var(--text-primary);">Sin contenido pendiente</h3>
+    <p class="text-sm mt-2" style="color: var(--text-muted);">No hay fotos de antes/después subidas por los artistas para revisar.</p>
+</div>
+{% endif %}
+
+<div id="toast" class="fixed bottom-6 right-6 hidden z-50 px-6 py-4 card-vintage shadow-2xl transition-all duration-300"></div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    async function reviewContent(messageId, action) {
+        const actionsDiv = document.getElementById('actions-' + messageId);
+
+        try {
+            function getCookie(name) {
+                let c = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+                return c ? c.pop() : '';
+            }
+            const resp = await fetch('{% url "mod_content_action" 0 %}'.replace('0', messageId), {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({ action: action })
+            });
+
+            if (!resp.ok) {
+                let errorMsg = 'Error ' + resp.status;
+                try {
+                    const err = await resp.json();
+                    errorMsg = err.error || errorMsg;
+                } catch (e) {
+                    const text = await resp.text();
+                    errorMsg = text.substring(0, 100) || errorMsg;
+                }
+                if (resp.status === 403) {
+                    showToast('Sesión sin permisos de administrador. Redirigiendo...', 'error');
+                    setTimeout(() => { window.location.href = '/admin-panel/login/'; }, 1500);
+                    return;
+                }
+                showToast('Error del servidor: ' + errorMsg, 'error');
+                return;
+            }
+
+            const result = await resp.json();
+            if (result.ok) {
+                showToast('Foto marcada como "' + result.label + '".', 'success');
+                if (actionsDiv) {
+                    actionsDiv.innerHTML = '<div class="w-full text-center py-2 text-sm font-semibold" style="color: ' +
+                        (action === 'approved' ? 'var(--accent-dark)' : 'var(--text-muted)') + '">' +
+                        '✓ ' + result.label + '</div>';
+                }
+                const card = document.getElementById('content-card-' + messageId);
+                if (card) {
+                    const badge = card.querySelector('.top-3.right-3 span');
+                    if (badge) {
+                        const label = result.label;
+                        badge.textContent = label;
+                        badge.style.background = action === 'approved'
+                            ? 'rgba(196, 154, 42, 0.15)'
+                            : 'rgba(139, 125, 107, 0.2)';
+                        badge.style.color = action === 'approved'
+                            ? 'var(--accent-dark)'
+                            : 'var(--text-muted)';
+                    }
+                }
+            } else {
+                showToast('Error: ' + (result.error || 'desconocido'), 'error');
+            }
+        } catch (e) {
+            showToast('Error de conexión con el servidor.', 'error');
+        }
+    }
+
+    async function deleteMessage(messageId) {
+        if (!confirm('¿Eliminar este mensaje? El contenido se borrará y quedará marcado como eliminado.')) return;
+        try {
+            function getCookie(name) {
+                let c = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+                return c ? c.pop() : '';
+            }
+            const resp = await fetch('{% url "mod_content_action" 0 %}'.replace('0', messageId), {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({ action: 'delete' })
+            });
+            if (!resp.ok) throw new Error((await resp.json()).error || 'Error');
+            const result = await resp.json();
+            if (result.ok) {
+                const card = document.getElementById('content-card-' + messageId);
+                if (card) card.style.display = 'none';
+                showToast('Mensaje eliminado.', 'success');
+            }
+        } catch (e) {
+            showToast('Error: ' + e.message, 'error');
+        }
+    }
+
+    function showToast(message, type) {
+        const toast = document.getElementById('toast');
+        const colors = {
+            success: 'border-emerald-500/30 text-emerald-400',
+            error: 'border-red-500/30 text-red-400',
+        };
+        toast.className = 'fixed bottom-6 right-6 z-50 px-6 py-4 card-vintage shadow-2xl transition-all duration-300 ' + (colors[type] || colors.success);
+        toast.textContent = message;
+        toast.classList.remove('hidden');
+        setTimeout(() => { toast.classList.add('hidden'); }, 3500);
+    }
+</script>
+{% endblock %}

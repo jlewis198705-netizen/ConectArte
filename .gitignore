@@ -1,0 +1,16 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+.env
+media/
+db.sqlite3
+*.egg-info/
+dist/
+build/
+staticfiles/
+*.log
+*.err
+server_*.txt
+lo\ que\ llevo.txt
