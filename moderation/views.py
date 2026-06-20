@@ -6,6 +6,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
 from django.db.models import Count, Q
+from django.contrib.auth.models import User as AuthUser
 from .models import AdminUser, AdminProfile, AdminJobRequest, AdminMessage, AdminContentFlag
 from .decorators import admin_required
 
@@ -15,6 +16,46 @@ def logout_view(request):
     from django.contrib.auth import logout
     logout(request)
     return redirect('mod_login')
+
+
+@require_http_methods(['GET', 'POST'])
+def register_view(request):
+    if request.user.is_authenticated and request.user.is_staff:
+        return redirect('mod_dashboard')
+
+    if AuthUser.objects.filter(is_staff=True).exists():
+        return redirect('mod_login')
+
+    error = None
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '')
+        password2 = request.POST.get('password2', '')
+
+        if not username or not email or not password:
+            error = 'Todos los campos son obligatorios.'
+        elif password != password2:
+            error = 'Las contraseñas no coinciden.'
+        elif len(password) < 8:
+            error = 'La contraseña debe tener al menos 8 caracteres.'
+        elif AuthUser.objects.filter(username=username).exists():
+            error = 'El nombre de usuario ya existe.'
+        else:
+            user = AuthUser.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                is_staff=True,
+                is_superuser=True,
+            )
+            from django.contrib.auth import authenticate, login
+            user_auth = authenticate(request, username=username, password=password)
+            if user_auth is not None:
+                login(request, user_auth)
+            return redirect('mod_dashboard')
+
+    return render(request, 'moderation/register.html', {'error': error})
 
 
 @require_http_methods(['GET', 'POST'])
@@ -34,10 +75,12 @@ def login_view(request):
         error = 'Credenciales incorrectas o no tienes permisos de administrador.'
 
     redirected = request.GET.get('next') is not None and request.user.is_authenticated
+    can_register = not AuthUser.objects.filter(is_staff=True).exists()
 
     return render(request, 'moderation/login.html', {
         'error': error,
         'redirected': redirected,
+        'can_register': can_register,
     })
 
 

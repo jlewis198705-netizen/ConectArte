@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Iniciar Sesión - ConectArte</title>
+    <title>Admin - Registrar - ConectArte</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -133,16 +133,9 @@
                     <circle cx="46" cy="26" r="4" fill="#34d399"/>
                 </svg>
             </div>
-            <h1 class="text-3xl font-bold tracking-tight" style="color: var(--text-primary);">Admin Panel</h1>
-            <p class="text-sm" style="color: var(--text-muted);">ConectArte - Gestión de administración</p>
+            <h1 class="text-3xl font-bold tracking-tight" style="color: var(--text-primary);">Registro Inicial</h1>
+            <p class="text-sm" style="color: var(--text-muted);">Crea el primer administrador de ConectArte</p>
         </div>
-
-        {% if redirected %}
-        <div class="p-4 mb-6 text-sm text-center" style="background: rgba(196, 154, 42, 0.1); border: 1px solid var(--accent); border-radius: 8px; color: var(--text-secondary);">
-            Ya tienes una sesión iniciada como <strong>{{ user.username }}</strong>, pero no tiene permisos de administrador.
-            <br>Inicia sesión con una cuenta de administrador.
-        </div>
-        {% endif %}
 
         {% if error %}
         <div class="p-4 mb-6 text-sm text-center" style="background: rgba(196, 154, 42, 0.1); border: 1px solid var(--accent); border-radius: 8px; color: var(--text-secondary);">{{ error }}</div>
@@ -153,15 +146,17 @@
             <div>
                 <label for="username" class="block text-xs font-semibold uppercase tracking-wider mb-2" style="color: var(--text-secondary);">Usuario</label>
                 <input type="text" id="username" name="username" value="{{ request.POST.username }}" required
-                       class="input-vintage"
-                       placeholder="Usuario administrador">
+                       class="input-vintage" placeholder="Nombre de usuario">
             </div>
-
+            <div>
+                <label for="email" class="block text-xs font-semibold uppercase tracking-wider mb-2" style="color: var(--text-secondary);">Correo electrónico</label>
+                <input type="email" id="email" name="email" value="{{ request.POST.email }}" required
+                       class="input-vintage" placeholder="admin@ejemplo.com">
+            </div>
             <div class="relative">
                 <label for="password" class="block text-xs font-semibold uppercase tracking-wider mb-2" style="color: var(--text-secondary);">Contraseña</label>
                 <input type="password" id="password" name="password" required
-                       class="input-vintage pr-12"
-                       placeholder="••••••••">
+                       class="input-vintage pr-12" placeholder="Mínimo 8 caracteres">
                 <button type="button" id="toggle-password"
                         class="absolute right-3 bottom-2.5 p-1 rounded-lg transition"
                         style="color: var(--text-muted);" tabindex="-1">
@@ -171,18 +166,29 @@
                     </svg>
                 </button>
             </div>
+            <div class="relative">
+                <label for="password2" class="block text-xs font-semibold uppercase tracking-wider mb-2" style="color: var(--text-secondary);">Confirmar contraseña</label>
+                <input type="password" id="password2" name="password2" required
+                       class="input-vintage pr-12" placeholder="Repite la contraseña">
+                <button type="button" id="toggle-password2"
+                        class="absolute right-3 bottom-2.5 p-1 rounded-lg transition"
+                        style="color: var(--text-muted);" tabindex="-1">
+                    <svg id="eye-icon2" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                </button>
+            </div>
 
             <button type="submit" class="btn-vintage w-full py-3">
-                Iniciar Sesión
+                Registrar Administrador
             </button>
         </form>
 
-        {% if can_register %}
         <p class="text-center text-sm mt-6" style="color: var(--text-muted);">
-            ¿Primera vez?
-            <a href="{% url 'mod_register' %}" style="color: var(--accent); text-decoration: none; font-weight: 600;">Registrar administrador</a>
+            ¿Ya tienes cuenta?
+            <a href="{% url 'mod_login' %}" style="color: var(--accent); text-decoration: none; font-weight: 600;">Inicia sesión</a>
         </p>
-        {% endif %}
     </div>
 
     <script>
@@ -194,17 +200,21 @@
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.dataset.theme = savedTheme;
 
-        document.getElementById('toggle-password')?.addEventListener('click', () => {
-            const pwd = document.getElementById('password');
-            const icon = document.getElementById('eye-icon');
-            if (pwd.type === 'password') {
-                pwd.type = 'text';
-                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/>';
-            } else {
-                pwd.type = 'password';
-                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>';
-            }
-        });
+        function setupToggle(btnId, inputId, iconId) {
+            document.getElementById(btnId)?.addEventListener('click', () => {
+                const pwd = document.getElementById(inputId);
+                const icon = document.getElementById(iconId);
+                if (pwd.type === 'password') {
+                    pwd.type = 'text';
+                    icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/>';
+                } else {
+                    pwd.type = 'password';
+                    icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>';
+                }
+            });
+        }
+        setupToggle('toggle-password', 'password', 'eye-icon');
+        setupToggle('toggle-password2', 'password2', 'eye-icon2');
     </script>
 </body>
 </html>
