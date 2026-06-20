@@ -2,9 +2,7 @@ services:
   - type: web
     name: conectarte
     runtime: python
-    plan: free
     buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput"
-    # Aquí unimos la migración y el servidor:
     startCommand: "python manage.py migrate --noinput && gunicorn conectarte_project.wsgi:application"
     envVars:
       - key: SECRET_KEY
