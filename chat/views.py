@@ -1,4 +1,5 @@
 import json
+import logging
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponseForbidden, HttpResponseBadRequest
 from django.contrib.auth import login, logout, authenticate
@@ -448,4 +449,6 @@ def send_message(request, pk):
     except JobRequest.DoesNotExist:
         return JsonResponse({'error': 'Solicitud no encontrada.'}, status=404)
     except Exception as e:
-        return JsonResponse({'error': 'Error al enviar el mensaje.'}, status=500)
+        logger = logging.getLogger(__name__)
+        logger.exception("Error al enviar mensaje (posible imagen)")
+        return JsonResponse({'error': str(e)}, status=500)

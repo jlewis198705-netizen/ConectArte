@@ -100,8 +100,14 @@ STORAGES = {
     },
 }
 
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+
+import os
+os.makedirs(MEDIA_ROOT / 'job_images', exist_ok=True)
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
