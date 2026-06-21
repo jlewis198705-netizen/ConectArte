@@ -1,179 +1,37 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Admin Panel - ConectArte{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     {% load static %}
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Outfit', 'sans-serif'],
-                    },
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
                 }
             }
         }
     </script>
-    <style>
-        :root {
-            --bg-primary: #fdf6e3;
-            --bg-secondary: #f5ead7;
-            --bg-tertiary: #ebe0c8;
-            --text-primary: #2c241a;
-            --text-secondary: #5d4e37;
-            --text-muted: #8b7d6b;
-            --accent: #c49a2a;
-            --accent-dark: #a88222;
-            --accent-light: #e8c56d;
-            --border: #d4c4a8;
-            --shadow: rgba(44, 36, 26, 0.15);
-            --shadow-strong: rgba(44, 36, 26, 0.25);
-            --focus-ring: rgba(196, 154, 42, 0.4);
-            --sidebar-bg: rgba(245, 234, 215, 0.85);
-            --sidebar-border: #d4c4a8;
-            --card-bg: rgba(245, 234, 215, 0.6);
-        }
-        [data-theme="dark"] {
-            --bg-primary: #1a1612;
-            --bg-secondary: #241f1a;
-            --bg-tertiary: #2d261f;
-            --text-primary: #f5e6c8;
-            --text-secondary: #c9b896;
-            --text-muted: #9a8b72;
-            --accent: #d4a835;
-            --accent-dark: #b8922a;
-            --accent-light: #e8c56d;
-            --border: #4a3f2e;
-            --shadow: rgba(0, 0, 0, 0.4);
-            --shadow-strong: rgba(0, 0, 0, 0.6);
-            --focus-ring: rgba(212, 168, 53, 0.5);
-            --sidebar-bg: rgba(36, 31, 26, 0.9);
-            --sidebar-border: #4a3f2e;
-            --card-bg: rgba(36, 31, 26, 0.6);
-        }
-
-        html, body {
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            font-family: 'Outfit', sans-serif;
-        }
-
-        body {
-            background-image: url('{% static "images/marmolito1.png" %}');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-color: rgba(253, 246, 227, 0.7);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        [data-theme="dark"] body::before {
-            background-color: rgba(26, 22, 18, 0.75);
-        }
-
-        .card-vintage {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            box-shadow: 0 4px 20px var(--shadow), inset 0 1px 0 var(--accent-light);
-        }
-
-        .btn-vintage {
-            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-            color: #1a1612;
-            font-weight: 600;
-            padding: 0.5rem 1.25rem;
-            border-radius: 8px;
-            border: 1px solid var(--accent-dark);
-            box-shadow: 0 2px 8px var(--shadow), inset 0 1px 0 var(--accent-light);
-            transition: all 0.2s ease;
-        }
-        .btn-vintage:hover {
-            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
-            box-shadow: 0 4px 16px var(--shadow-strong), inset 0 1px 0 var(--accent-light);
-            transform: translateY(-1px);
-        }
-
-        .input-vintage {
-            background: var(--bg-primary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            color: var(--text-primary);
-            font-family: inherit;
-            transition: all 0.2s ease;
-        }
-        .input-vintage:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--focus-ring);
-        }
-        .input-vintage::placeholder {
-            color: var(--text-muted);
-        }
-
-        .link-vintage {
-            color: var(--accent);
-            text-decoration: none;
-            border-bottom: 1px solid transparent;
-            transition: all 0.2s ease;
-        }
-        .link-vintage:hover {
-            color: var(--accent-dark);
-            border-bottom-color: var(--accent-dark);
-        }
-
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: var(--bg-secondary); }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
-            border-radius: 4px;
-        }
-
-        ::selection {
-            background: var(--accent);
-            color: #1a1612;
-        }
-
-        .sidebar-link {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: 10px;
-            transition: all 0.2s ease;
-            color: var(--text-secondary);
-            text-decoration: none;
-        }
-        .sidebar-link:hover {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-        .sidebar-link.active {
-            background: var(--accent-light);
-            color: #1a1612;
-            border: 1px solid var(--accent);
-        }
-    </style>
     {% block extra_head %}{% endblock %}
 </head>
 <body class="min-h-screen flex relative">
-    <button id="theme-toggle" class="fixed top-4 right-4 z-50 btn-vintage p-2 text-sm">🌓</button>
+    <button id="theme-toggle" class="fixed top-4 right-4 z-50 btn-vintage p-2 text-sm" aria-label="Cambiar tema">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path id="theme-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+        </svg>
+    </button>
 
-    <nav class="fixed left-0 top-0 h-full w-64 z-40 flex flex-col" style="background: var(--sidebar-bg); border-right: 1px solid var(--sidebar-border); backdrop-filter: blur(12px);">
+    <!-- Overlay for mobile sidebar -->
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <nav id="sidebar" class="fixed left-0 top-0 h-full w-64 z-40 flex flex-col sidebar-desktop" style="background: var(--sidebar-bg); border-right: 1px solid var(--sidebar-border); backdrop-filter: blur(12px);">
         <div class="p-5" style="border-bottom: 1px solid var(--border);">
             <div class="flex items-center gap-3">
                 <div class="p-2" style="background: var(--accent-light); border-radius: 10px; border: 1px solid var(--accent);">
@@ -222,8 +80,7 @@
         </div>
 
         <div class="px-4 pb-2">
-            <a href="{% url 'dashboard' %}" target="_blank"
-               class="sidebar-link">
+            <a href="{% url 'dashboard' %}" target="_blank" class="sidebar-link">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                 <span class="text-sm font-medium">Ir al Sitio</span>
             </a>
@@ -245,18 +102,69 @@
         </div>
     </nav>
 
-    <main class="relative z-10 flex-1 ml-64 p-8">
+    <!-- Mobile header with hamburger -->
+    <div class="fixed top-0 left-0 right-0 z-30 flex items-center gap-3 px-4 h-14 lg:hidden" style="background: var(--sidebar-bg); border-bottom: 1px solid var(--sidebar-border); backdrop-filter: blur(12px);">
+        <button onclick="toggleSidebar()" class="p-2 rounded-lg" style="color: var(--text-primary);" aria-label="Menú">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <span class="text-lg font-bold" style="color: var(--text-primary);">Admin ConectArte</span>
+    </div>
+
+    <main class="relative z-10 flex-1 ml-64 main-with-sidebar p-8 pt-20 lg:pt-8">
         {% block content %}{% endblock %}
     </main>
 
+    <div id="toast-container" class="toast-container"></div>
+
     <script>
+        // Theme toggle
         document.getElementById('theme-toggle')?.addEventListener('click', () => {
             const dark = document.documentElement.dataset.theme === 'dark';
             document.documentElement.dataset.theme = dark ? 'light' : 'dark';
             localStorage.setItem('theme', dark ? 'light' : 'dark');
+            updateThemeIcon(!dark);
         });
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.dataset.theme = savedTheme;
+        updateThemeIcon(savedTheme === 'dark');
+
+        function updateThemeIcon(isDark) {
+            const icon = document.getElementById('theme-icon');
+            if (isDark) {
+                icon.setAttribute('d', 'M21.752 15.002A9.72 9.72 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z');
+            } else {
+                icon.setAttribute('d', 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z');
+            }
+        }
+
+        // Sidebar toggle for mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        }
+
+        // Toast system
+        function showToast(message, type) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast toast-' + (type || 'success');
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // Close sidebar on link click (mobile)
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 1024) toggleSidebar();
+            });
+        });
     </script>
     {% block extra_scripts %}{% endblock %}
 </body>
