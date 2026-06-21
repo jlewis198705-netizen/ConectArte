@@ -921,6 +921,14 @@
                 const hasBefore = data.before && data.before.image_url;
                 const hasAfter = data.after && data.after.image_url;
 
+                const baBefore = sliderContainer.querySelector('.ba-before');
+                const baHandle = sliderContainer.querySelector('.ba-handle');
+
+                baBefore.style.display = '';
+                baHandle.style.display = '';
+                afterImg.style.width = '';
+                afterImg.style.objectFit = '';
+
                 if (hasBefore && hasAfter) {
                     beforeImg.src = data.before.image_url;
                     afterImg.src = data.after.image_url;
@@ -929,12 +937,16 @@
                     panel.classList.remove('hidden');
                     initBaSlider(sliderContainer);
                 } else if (hasBefore || hasAfter) {
-                    if (hasBefore) beforeImg.src = data.before.image_url;
-                    if (hasAfter) afterImg.src = data.after.image_url;
+                    const single = hasBefore ? data.before : data.after;
+                    afterImg.src = single.image_url;
+                    afterImg.style.width = '100%';
+                    afterImg.style.objectFit = 'contain';
+                    beforeImg.src = '';
+                    baBefore.style.display = 'none';
+                    baHandle.style.display = 'none';
                     sliderContainer.classList.remove('hidden');
                     emptyDiv.classList.add('hidden');
                     panel.classList.remove('hidden');
-                    initBaSlider(sliderContainer);
                 } else {
                     panel.classList.add('hidden');
                     sliderContainer.classList.add('hidden');
