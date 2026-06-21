@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - ConectArte</title>
     <meta name="description" content="Gestiona tus solicitudes de servicios artísticos en ConectArte.">
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
     <script>document.documentElement.dataset.theme=localStorage.getItem('theme')||'light'</script>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -59,7 +60,11 @@
             </div>
             
             <div class="flex items-center gap-6">
-                <button id="theme-toggle" class="p-2 btn-vintage text-sm">🌓</button>
+                <button id="theme-toggle" class="p-2 btn-vintage text-sm" aria-label="Cambiar tema">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path id="theme-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                </button>
                 <div class="flex items-center gap-3 bg-tertiary border border-vintage px-4 py-1.5 rounded-full">
                     <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                     <span class="text-sm font-medium text-primary">
@@ -85,28 +90,36 @@
             <!-- Stats Cards -->
             <div class="grid grid-cols-2 gap-3">
                 <div class="card-vintage p-3 flex items-center gap-3" id="stat-total">
-                    <span class="text-xl">📋</span>
+                    <svg class="w-6 h-6 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z"/>
+                    </svg>
                     <div>
                         <p class="text-lg font-bold text-primary leading-none" id="stat-total-num">-</p>
                         <p class="text-[10px] text-muted font-medium uppercase tracking-wider">Totales</p>
                     </div>
                 </div>
                 <div class="card-vintage p-3 flex items-center gap-3" id="stat-pending">
-                    <span class="text-xl">⏳</span>
+                    <svg class="w-6 h-6 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                    </svg>
                     <div>
                         <p class="text-lg font-bold text-amber-400 leading-none" id="stat-pending-num">-</p>
                         <p class="text-[10px] text-muted font-medium uppercase tracking-wider">Pendientes</p>
                     </div>
                 </div>
                 <div class="card-vintage p-3 flex items-center gap-3" id="stat-assigned">
-                    <span class="text-xl">🔄</span>
+                    <svg class="w-6 h-6 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+                    </svg>
                     <div>
                         <p class="text-lg font-bold text-accent leading-none" id="stat-assigned-num">-</p>
                         <p class="text-[10px] text-muted font-medium uppercase tracking-wider">Activas</p>
                     </div>
                 </div>
                 <div class="card-vintage p-3 flex items-center gap-3" id="stat-completed">
-                    <span class="text-xl">✅</span>
+                    <svg class="w-6 h-6 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                    </svg>
                     <div>
                         <p class="text-lg font-bold text-secondary leading-none" id="stat-completed-num">-</p>
                         <p class="text-[10px] text-muted font-medium uppercase tracking-wider">Completadas</p>
@@ -181,22 +194,41 @@
 
                 <!-- Search & Filters -->
                 <div class="mb-4 space-y-3">
-                    <input type="text" id="search-requests" placeholder="🔍 Buscar por descripción..."
+                    <input type="text" id="search-requests" placeholder="Buscar por descripción..."
                            class="input-vintage w-full text-sm">
                     <div class="flex gap-2 flex-wrap" id="filter-chips">
                         <button class="filter-chip active px-3 py-1.5 text-xs font-bold rounded-xl border transition"
                                 data-filter="all" style="background:var(--accent);color:#1a1612;border-color:var(--accent-dark)">Todas</button>
-                        <button class="filter-chip px-3 py-1.5 text-xs font-bold rounded-xl border transition"
-                                data-filter="pending" style="background:var(--bg-secondary);color:var(--text-muted);border-color:var(--border)">⏳ Pendientes</button>
-                        <button class="filter-chip px-3 py-1.5 text-xs font-bold rounded-xl border transition"
-                                data-filter="assigned" style="background:var(--bg-secondary);color:var(--text-muted);border-color:var(--border)">🔄 Activas</button>
-                        <button class="filter-chip px-3 py-1.5 text-xs font-bold rounded-xl border transition"
-                                data-filter="completed" style="background:var(--bg-secondary);color:var(--text-muted);border-color:var(--border)">✅ Completadas</button>
+                        <button class="filter-chip px-3 py-1.5 text-xs font-bold rounded-xl border transition flex items-center gap-1"
+                                 data-filter="pending" style="background:var(--bg-secondary);color:var(--text-muted);border-color:var(--border)">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                            </svg>
+                            Pendientes
+                        </button>
+                        <button class="filter-chip px-3 py-1.5 text-xs font-bold rounded-xl border transition flex items-center gap-1"
+                                 data-filter="assigned" style="background:var(--bg-secondary);color:var(--text-muted);border-color:var(--border)">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+                            </svg>
+                            Activas
+                        </button>
+                        <button class="filter-chip px-3 py-1.5 text-xs font-bold rounded-xl border transition flex items-center gap-1"
+                                 data-filter="completed" style="background:var(--bg-secondary);color:var(--text-muted);border-color:var(--border)">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                            </svg>
+                            Completadas
+                        </button>
                     </div>
                 </div>
                 
                 <div id="requests-list" class="space-y-3 pr-2">
-                    <p class="text-sm text-muted text-center py-8">Cargando solicitudes...</p>
+                    <div class="skeleton-list space-y-3">
+                        <div class="p-4 rounded-2xl border border-vintage bg-secondary/60"><div class="skeleton h-4 w-16 mb-2"></div><div class="skeleton h-3 w-full mb-1"></div><div class="skeleton h-3 w-3/4 mb-3"></div><div class="skeleton h-3 w-24 mt-2"></div></div>
+                        <div class="p-4 rounded-2xl border border-vintage bg-secondary/60"><div class="skeleton h-4 w-16 mb-2"></div><div class="skeleton h-3 w-full mb-1"></div><div class="skeleton h-3 w-2/3 mb-3"></div><div class="skeleton h-3 w-24 mt-2"></div></div>
+                        <div class="p-4 rounded-2xl border border-vintage bg-secondary/60"><div class="skeleton h-4 w-16 mb-2"></div><div class="skeleton h-3 w-full mb-1"></div><div class="skeleton h-3 w-4/5 mb-3"></div><div class="skeleton h-3 w-24 mt-2"></div></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -217,7 +249,7 @@
 
 
 
-                <!-- Before/After Comparison Panel -->
+                <!-- Before/After Comparison Slider -->
                 <div id="before-after-panel" class="hidden bg-tertiary border-b border-vintage">
                     <div class="px-4 py-3">
                         <div class="flex items-center justify-between mb-2">
@@ -228,19 +260,15 @@
                                 </svg>
                             </button>
                         </div>
-                        <div id="ba-images" class="grid grid-cols-2 gap-2 hidden">
-                            <div class="bg-secondary border border-vintage rounded-xl overflow-hidden">
-                                <div class="text-[10px] font-bold uppercase tracking-wider text-accent-dark bg-amber-500/10 px-2 py-1 border-b border-vintage">Antes</div>
-                                <div id="ba-before" class="flex items-center justify-center h-20 text-muted">
-                                    <p class="text-xs">Sin imagen</p>
-                                </div>
+                        <div id="ba-slider-container" class="hidden ba-slider">
+                            <div class="ba-before">
+                                <img id="ba-before-img" src="" alt="Antes">
                             </div>
-                            <div class="bg-secondary border border-vintage rounded-xl overflow-hidden">
-                                <div class="text-[10px] font-bold uppercase tracking-wider text-accent bg-amber-500/10 px-2 py-1 border-b border-vintage">Después</div>
-                                <div id="ba-after" class="flex items-center justify-center h-20 text-muted">
-                                    <p class="text-xs">Sin imagen</p>
-                                </div>
-                            </div>
+                            <img id="ba-after-img" src="" alt="Después">
+                            <div class="ba-handle"></div>
+                        </div>
+                        <div id="ba-empty" class="hidden text-center py-4 text-xs text-muted">
+                            No hay imágenes de antes/después disponibles.
                         </div>
                     </div>
                 </div>
@@ -305,6 +333,8 @@
         </div>
 
     </main>
+
+    <div id="toast-container" class="toast-container"></div>
 
     <!-- App Logic Script -->
     <script>
@@ -619,7 +649,7 @@
                     fetchRequests();
                     fetchStats();
                 } else {
-                    alert(result.error || 'Error al crear la solicitud.');
+                    showToast(result.error || 'Error al crear la solicitud.', 'error');
                 }
             } catch (error) {
                 console.error("Error creating request:", error);
@@ -647,7 +677,7 @@
                         selectRequest(result.job_request);
                     }
                 } else {
-                    alert(result.error || 'Error al clasificar.');
+                    showToast(result.error || 'Error al clasificar.', 'error');
                 }
             } catch (error) {
                 console.error("Error calling AI agent:", error);
@@ -676,7 +706,7 @@
                         selectRequest(updatedReq);
                     }
                 } else {
-                    alert(result.error || 'Error al completar la solicitud.');
+                    showToast(result.error || 'Error al completar la solicitud.', 'error');
                 }
             } catch (error) {
                 console.error("Error completing request:", error);
@@ -806,7 +836,7 @@
                     return;
                 }
 
-                msgDiv.className = "flex flex-col max-w-[80%] rounded-2xl p-4 shadow-sm";
+                msgDiv.className = "flex flex-col max-w-[80%] rounded-2xl p-4 shadow-sm msg-animate";
 
                 const isSystem = msg.sender === 'system_ia';
                 const isMe = msg.sender === CURRENT_USER;
@@ -883,36 +913,92 @@
                 const data = await response.json();
 
                 const panel = document.getElementById('before-after-panel');
-                const beforeDiv = document.getElementById('ba-before');
-                const afterDiv = document.getElementById('ba-after');
+                const sliderContainer = document.getElementById('ba-slider-container');
+                const emptyDiv = document.getElementById('ba-empty');
+                const beforeImg = document.getElementById('ba-before-img');
+                const afterImg = document.getElementById('ba-after-img');
 
-                if (data.before && data.before.image_url) {
-                    beforeDiv.innerHTML = `<img src="${data.before.image_url}" alt="Antes" class="w-full h-20 object-cover cursor-pointer" onclick="window.open('${data.before.image_url}', '_blank')">`;
-                } else {
-                    beforeDiv.innerHTML = `<p class="text-xs text-zinc-600">Sin imagen</p>`;
-                }
+                const hasBefore = data.before && data.before.image_url;
+                const hasAfter = data.after && data.after.image_url;
 
-                if (data.after && data.after.image_url) {
-                    afterDiv.innerHTML = `<img src="${data.after.image_url}" alt="Después" class="w-full h-20 object-cover cursor-pointer" onclick="window.open('${data.after.image_url}', '_blank')">`;
-                } else {
-                    afterDiv.innerHTML = `<p class="text-xs text-zinc-600">Sin imagen</p>`;
-                }
-
-                const baImages = document.getElementById('ba-images');
-                const hasImages = (data.before && data.before.image_url) || (data.after && data.after.image_url);
-                if (hasImages) {
+                if (hasBefore && hasAfter) {
+                    beforeImg.src = data.before.image_url;
+                    afterImg.src = data.after.image_url;
+                    sliderContainer.classList.remove('hidden');
+                    emptyDiv.classList.add('hidden');
                     panel.classList.remove('hidden');
-                    baImages.classList.remove('hidden');
+                    initBaSlider(sliderContainer);
+                } else if (hasBefore || hasAfter) {
+                    if (hasBefore) beforeImg.src = data.before.image_url;
+                    if (hasAfter) afterImg.src = data.after.image_url;
+                    sliderContainer.classList.remove('hidden');
+                    emptyDiv.classList.add('hidden');
+                    panel.classList.remove('hidden');
+                    initBaSlider(sliderContainer);
                 } else {
                     panel.classList.add('hidden');
+                    sliderContainer.classList.add('hidden');
+                    emptyDiv.classList.remove('hidden');
                 }
             } catch (error) {
                 console.error("Error fetching before/after:", error);
             }
         }
 
+        function initBaSlider(container) {
+            const beforeDiv = container.querySelector('.ba-before');
+            const handle = container.querySelector('.ba-handle');
+            let isDragging = false;
+
+            function setPosition(x) {
+                const rect = container.getBoundingClientRect();
+                let pct = ((x - rect.left) / rect.width) * 100;
+                pct = Math.max(0, Math.min(100, pct));
+                beforeDiv.style.width = pct + '%';
+                handle.style.left = pct + '%';
+            }
+
+            function onStart(e) {
+                isDragging = true;
+                container.style.cursor = 'ew-resize';
+                const x = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+                setPosition(x);
+            }
+
+            function onMove(e) {
+                if (!isDragging) return;
+                e.preventDefault();
+                const x = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+                setPosition(x);
+            }
+
+            function onEnd() {
+                isDragging = false;
+                container.style.cursor = 'ew-resize';
+            }
+
+            container.removeEventListener('mousedown', onStart);
+            container.removeEventListener('mousemove', onMove);
+            container.removeEventListener('mouseup', onEnd);
+            container.removeEventListener('mouseleave', onEnd);
+            container.removeEventListener('touchstart', onStart);
+            container.removeEventListener('touchmove', onMove);
+            container.removeEventListener('touchend', onEnd);
+
+            container.addEventListener('mousedown', onStart);
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onEnd);
+            document.addEventListener('mouseleave', onEnd);
+            container.addEventListener('touchstart', onStart, { passive: true });
+            container.addEventListener('touchmove', onMove, { passive: false });
+            container.addEventListener('touchend', onEnd);
+
+            beforeDiv.style.width = '50%';
+            handle.style.left = '50%';
+        }
+
         function toggleBeforeAfterPanel() {
-            const container = document.getElementById('ba-images');
+            const container = document.getElementById('ba-slider-container');
             const icon = document.querySelector('#toggle-ba-panel svg');
             container.classList.toggle('hidden');
             if (container.classList.contains('hidden')) {
@@ -990,7 +1076,7 @@
                     fetchBeforeAfter(activeRequestId);
                     renderTimeline(activeRequestId);
                 } else {
-                    alert(result.error || 'No se pudo enviar el mensaje.');
+                    showToast(result.error || 'No se pudo enviar el mensaje.', 'error');
                 }
             } catch (error) {
                 console.error("Error sending message:", error);
@@ -998,18 +1084,41 @@
         }
     </script>
     <script>
-      // Theme toggle script
+      // Consolidated theme toggle
       const toggleBtn = document.getElementById('theme-toggle');
       if (toggleBtn) {
         toggleBtn.addEventListener('click', () => {
           const dark = document.documentElement.dataset.theme === 'dark';
           document.documentElement.dataset.theme = dark ? 'light' : 'dark';
           localStorage.setItem('theme', dark ? 'light' : 'dark');
+          updateThemeIcon(!dark);
         });
       }
-      // Initialize theme
       const savedTheme = localStorage.getItem('theme') || 'light';
       document.documentElement.dataset.theme = savedTheme;
+      updateThemeIcon(savedTheme === 'dark');
+
+      function updateThemeIcon(isDark) {
+        const icon = document.getElementById('theme-icon');
+        if (isDark) {
+          icon.setAttribute('d', 'M21.752 15.002A9.72 9.72 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z');
+        } else {
+          icon.setAttribute('d', 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z');
+        }
+      }
+
+      function showToast(message, type) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast toast-' + (type || 'success');
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transition = 'opacity 0.3s ease';
+          setTimeout(() => toast.remove(), 300);
+        }, 3500);
+      }
     </script>
 </body>
 </html>

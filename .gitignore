@@ -1,4 +1,6 @@
 venv/
+.venv/
+node_modules/
 __pycache__/
 *.pyc
 *.pyo
@@ -10,6 +12,7 @@ db.sqlite3
 dist/
 build/
 staticfiles/
+static/css/output.css
 *.log
 *.err
 server_*.txt
