@@ -7,8 +7,7 @@ class ChatConfig(AppConfig):
     name = 'chat'
 
     def ready(self):
-        # Ejecutar migraciones solo si estamos en Render (donde existe DATABASE_URL)
-        if os.environ.get('DATABASE_URL'):
+        if os.environ.get('RENDER'):
             try:
                 call_command('migrate')
                 print("Migraciones ejecutadas automáticamente.")

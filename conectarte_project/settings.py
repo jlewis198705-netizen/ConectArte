@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'storages',
     'chat',
     'moderation',
 ]
@@ -104,6 +105,30 @@ STORAGES = {
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# --- Supabase S3 Storage (producción) ---
+if not DEBUG:
+    SUPABASE_S3_ACCESS_KEY = os.getenv('SUPABASE_S3_ACCESS_KEY')
+    SUPABASE_S3_SECRET_KEY = os.getenv('SUPABASE_S3_SECRET_KEY')
+    SUPABASE_S3_BUCKET = os.getenv('SUPABASE_S3_BUCKET', 'conectarte-images')
+    SUPABASE_S3_ENDPOINT = os.getenv('SUPABASE_S3_ENDPOINT', 'https://qwyhbkivnczcsamljrly.storage.supabase.co/storage/v1/s3')
+    SUPABASE_S3_REGION = os.getenv('SUPABASE_S3_REGION', 'us-east-1')
+
+    STORAGES['default'] = {
+        'BACKEND': 'chat.storage.SupabasePublicStorage',
+    }
+    AWS_ACCESS_KEY_ID = SUPABASE_S3_ACCESS_KEY
+    AWS_SECRET_ACCESS_KEY = SUPABASE_S3_SECRET_KEY
+    AWS_STORAGE_BUCKET_NAME = SUPABASE_S3_BUCKET
+    AWS_S3_REGION_NAME = SUPABASE_S3_REGION
+    AWS_S3_ENDPOINT_URL = SUPABASE_S3_ENDPOINT
+    AWS_S3_ADDRESSING_STYLE = "path"
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_S3_OBJECT_PARAMETERS = {
+        'CacheControl': 'max-age=86400',
+    }
+    AWS_DEFAULT_ACL = 'public-read'
+# --- Fin configuración S3 ---
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024

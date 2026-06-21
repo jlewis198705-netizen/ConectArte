@@ -870,6 +870,7 @@
                     img.alt = msg.image_type || 'imagen';
                     img.className = "max-w-full h-20 object-cover rounded-lg border border-vintage cursor-pointer hover:opacity-90 transition";
                     img.addEventListener('click', () => window.open(msg.image_url, '_blank'));
+                    img.onerror = function() { this.src = ''; this.alt = 'Imagen no disponible'; this.className = 'max-w-full h-20 object-contain rounded-lg border border-dashed border-vintage opacity-40 p-2'; this.parentElement.innerHTML = '<div class=\"flex items-center justify-center h-20 rounded-lg bg-secondary text-muted text-xs\">Imagen no disponible</div>'; };
                     imgContainer.appendChild(img);
 
                     if (msg.image_type) {
@@ -913,13 +914,13 @@
                 const afterDiv = document.getElementById('ba-after');
 
                 if (data.before && data.before.image_url) {
-                    beforeDiv.innerHTML = `<img src="${data.before.image_url}" alt="Antes" class="w-full h-20 object-cover cursor-pointer rounded-lg" onclick="window.open('${data.before.image_url}', '_blank')">`;
+                    beforeDiv.innerHTML = `<img src="${data.before.image_url}" alt="Antes" class="w-full h-20 object-cover cursor-pointer rounded-lg" onclick="window.open('${data.before.image_url}', '_blank')" onerror="this.onerror=null;this.outerHTML='<p class=\\'text-xs text-muted\\'>Sin imagen</p>'">`;
                 } else {
                     beforeDiv.innerHTML = `<p class="text-xs text-muted">Sin imagen</p>`;
                 }
 
                 if (data.after && data.after.image_url) {
-                    afterDiv.innerHTML = `<img src="${data.after.image_url}" alt="Después" class="w-full h-20 object-cover cursor-pointer rounded-lg" onclick="window.open('${data.after.image_url}', '_blank')">`;
+                    afterDiv.innerHTML = `<img src="${data.after.image_url}" alt="Después" class="w-full h-20 object-cover cursor-pointer rounded-lg" onclick="window.open('${data.after.image_url}', '_blank')" onerror="this.onerror=null;this.outerHTML='<p class=\\'text-xs text-muted\\'>Sin imagen</p>'">`;
                 } else {
                     afterDiv.innerHTML = `<p class="text-xs text-muted">Sin imagen</p>`;
                 }

@@ -5,3 +5,5 @@ whitenoise
 Pillow
 python-dotenv
 psycopg2-binary
+django-storages
+boto3
