@@ -260,15 +260,19 @@
                                 </svg>
                             </button>
                         </div>
-                        <div id="ba-slider-container" class="hidden ba-slider">
-                            <div class="ba-before">
-                                <img id="ba-before-img" src="" alt="Antes">
+                        <div id="ba-images" class="grid grid-cols-2 gap-2 hidden">
+                            <div class="bg-secondary border border-vintage rounded-xl overflow-hidden">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-accent-dark bg-amber-500/10 px-2 py-1 border-b border-vintage">Antes</div>
+                                <div id="ba-before" class="flex items-center justify-center h-20 text-muted">
+                                    <p class="text-xs">Sin imagen</p>
+                                </div>
                             </div>
-                            <img id="ba-after-img" src="" alt="Después">
-                            <div class="ba-handle"></div>
-                        </div>
-                        <div id="ba-empty" class="hidden text-center py-4 text-xs text-muted">
-                            No hay imágenes de antes/después disponibles.
+                            <div class="bg-secondary border border-vintage rounded-xl overflow-hidden">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-accent bg-amber-500/10 px-2 py-1 border-b border-vintage">Después</div>
+                                <div id="ba-after" class="flex items-center justify-center h-20 text-muted">
+                                    <p class="text-xs">Sin imagen</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -913,104 +917,37 @@
                 const data = await response.json();
 
                 const panel = document.getElementById('before-after-panel');
-                const sliderContainer = document.getElementById('ba-slider-container');
-                const emptyDiv = document.getElementById('ba-empty');
-                const beforeImg = document.getElementById('ba-before-img');
-                const afterImg = document.getElementById('ba-after-img');
+                const beforeDiv = document.getElementById('ba-before');
+                const afterDiv = document.getElementById('ba-after');
 
-                const hasBefore = data.before && data.before.image_url;
-                const hasAfter = data.after && data.after.image_url;
+                if (data.before && data.before.image_url) {
+                    beforeDiv.innerHTML = `<img src="${data.before.image_url}" alt="Antes" class="w-full h-20 object-cover cursor-pointer rounded-lg" onclick="window.open('${data.before.image_url}', '_blank')">`;
+                } else {
+                    beforeDiv.innerHTML = `<p class="text-xs text-muted">Sin imagen</p>`;
+                }
 
-                const baBefore = sliderContainer.querySelector('.ba-before');
-                const baHandle = sliderContainer.querySelector('.ba-handle');
+                if (data.after && data.after.image_url) {
+                    afterDiv.innerHTML = `<img src="${data.after.image_url}" alt="Después" class="w-full h-20 object-cover cursor-pointer rounded-lg" onclick="window.open('${data.after.image_url}', '_blank')">`;
+                } else {
+                    afterDiv.innerHTML = `<p class="text-xs text-muted">Sin imagen</p>`;
+                }
 
-                baBefore.style.display = '';
-                baHandle.style.display = '';
-                afterImg.style.width = '';
-                afterImg.style.objectFit = '';
-
-                if (hasBefore && hasAfter) {
-                    beforeImg.src = data.before.image_url;
-                    afterImg.src = data.after.image_url;
-                    sliderContainer.classList.remove('hidden');
-                    emptyDiv.classList.add('hidden');
+                const baImages = document.getElementById('ba-images');
+                const hasImages = (data.before && data.before.image_url) || (data.after && data.after.image_url);
+                if (hasImages) {
                     panel.classList.remove('hidden');
-                    initBaSlider(sliderContainer);
-                } else if (hasBefore || hasAfter) {
-                    const single = hasBefore ? data.before : data.after;
-                    afterImg.src = single.image_url;
-                    afterImg.style.width = '100%';
-                    afterImg.style.objectFit = 'contain';
-                    beforeImg.src = '';
-                    baBefore.style.display = 'none';
-                    baHandle.style.display = 'none';
-                    sliderContainer.classList.remove('hidden');
-                    emptyDiv.classList.add('hidden');
-                    panel.classList.remove('hidden');
+                    baImages.classList.remove('hidden');
                 } else {
                     panel.classList.add('hidden');
-                    sliderContainer.classList.add('hidden');
-                    emptyDiv.classList.remove('hidden');
                 }
             } catch (error) {
                 console.error("Error fetching before/after:", error);
             }
         }
 
-        function initBaSlider(container) {
-            const beforeDiv = container.querySelector('.ba-before');
-            const handle = container.querySelector('.ba-handle');
-            let isDragging = false;
-
-            function setPosition(x) {
-                const rect = container.getBoundingClientRect();
-                let pct = ((x - rect.left) / rect.width) * 100;
-                pct = Math.max(0, Math.min(100, pct));
-                beforeDiv.style.width = pct + '%';
-                handle.style.left = pct + '%';
-            }
-
-            function onStart(e) {
-                isDragging = true;
-                container.style.cursor = 'ew-resize';
-                const x = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
-                setPosition(x);
-            }
-
-            function onMove(e) {
-                if (!isDragging) return;
-                e.preventDefault();
-                const x = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
-                setPosition(x);
-            }
-
-            function onEnd() {
-                isDragging = false;
-                container.style.cursor = 'ew-resize';
-            }
-
-            container.removeEventListener('mousedown', onStart);
-            container.removeEventListener('mousemove', onMove);
-            container.removeEventListener('mouseup', onEnd);
-            container.removeEventListener('mouseleave', onEnd);
-            container.removeEventListener('touchstart', onStart);
-            container.removeEventListener('touchmove', onMove);
-            container.removeEventListener('touchend', onEnd);
-
-            container.addEventListener('mousedown', onStart);
-            document.addEventListener('mousemove', onMove);
-            document.addEventListener('mouseup', onEnd);
-            document.addEventListener('mouseleave', onEnd);
-            container.addEventListener('touchstart', onStart, { passive: true });
-            container.addEventListener('touchmove', onMove, { passive: false });
-            container.addEventListener('touchend', onEnd);
-
-            beforeDiv.style.width = '50%';
-            handle.style.left = '50%';
-        }
 
         function toggleBeforeAfterPanel() {
-            const container = document.getElementById('ba-slider-container');
+            const container = document.getElementById('ba-images');
             const icon = document.querySelector('#toggle-ba-panel svg');
             container.classList.toggle('hidden');
             if (container.classList.contains('hidden')) {
