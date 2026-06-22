@@ -33,6 +33,7 @@ def register_view(request):
             data = json.loads(request.body) if request.content_type == 'application/json' else request.POST
             username = data.get('username', '').strip()
             password = data.get('password', '')
+            password2 = data.get('password2', '')
             role = data.get('role', 'client').strip()
             first_name = data.get('first_name', '').strip()
             last_name = data.get('last_name', '').strip()
@@ -42,6 +43,9 @@ def register_view(request):
                 
             if len(password) < 8:
                 return JsonResponse({'error': 'La contraseña debe tener al menos 8 caracteres.'}, status=400)
+                
+            if password != password2:
+                return JsonResponse({'error': 'Las contraseñas no coinciden.'}, status=400)
                 
             if role not in ['client', 'artist']:
                 return JsonResponse({'error': 'Rol inválido.'}, status=400)
